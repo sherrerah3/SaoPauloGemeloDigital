@@ -75,8 +75,6 @@ señalización, tipografía Archivo (ancha en títulos, condensada en rótulos) 
 azul de la línea 1 para P1 y amarillo de la línea 4 para P2. Los filtros de cada sección viven en la URL
 (`#transporte?metrica=paradas_por_km2&distrito=96`), así que cualquier vista se puede compartir.
 
-En `.claude/skills/` están las skills de Claude Code que se usaron para el diseño (ver su README).
-
 ## Calidad del código
 
 - **Front:** [Biome](https://biomejs.dev) (`biome.json`), 2 espacios y 120 columnas, imports ordenados.

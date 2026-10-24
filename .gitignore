@@ -14,3 +14,5 @@ data/derivados/red_bus.gpkg
 # y el repo es público; buses pesa más de 50 MB.
 data/lago/geo/densidad_sectores.geojson
 data/lago/geo/buses.geojson
+# Configuración local de Claude Code (las skills viven en ~/.claude/skills, no en el repo)
+.claude/

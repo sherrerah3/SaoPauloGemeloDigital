@@ -2,7 +2,7 @@
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
   "files": {
-    "includes": ["**", "!public/data", "!data", "!package-lock.json", "!.claude"]
+    "includes": ["**", "!public/data", "!data", "!package-lock.json"]
   },
   "formatter": {
     "indentStyle": "space",
