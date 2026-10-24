@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.venv/
+__pycache__/
+*.pyc
+.vercel/
+# Crudos: se regeneran con los scripts de ingesta (llevan fecha en el nombre).
+data/raw/*
+!data/raw/.gitkeep
+*.tsbuildinfo
+# Caché de calculos_p1.py (se regenera sola)
+data/derivados/red_bus.gpkg
+# Lago: se regeneran con `npm run datos`. densidad_sectores trae indice_vulnerabilidad (Sensible)
+# y el repo es público; buses pesa más de 50 MB.
+data/lago/geo/densidad_sectores.geojson
+data/lago/geo/buses.geojson
