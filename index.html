@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>São Paulo · Gemelo digital</title>
     <meta name="description" content="Transporte, equipamientos y empleo formal en los 96 distritos de São Paulo, con fuente y vigencia de cada cifra." />
+    <script>
+      // Tema antes del primer pintado (src/tema.ts lo mantiene después).
+      (() => {
+        var tema = null;
+        try {
+          tema = localStorage.getItem("tema");
+        } catch {}
+        if (tema !== "claro" && tema !== "oscuro") {
+          tema = window.matchMedia("(prefers-color-scheme: dark)").matches ? "oscuro" : "claro";
+        }
+        document.documentElement.dataset.tema = tema;
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
