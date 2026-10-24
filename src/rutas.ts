@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 export interface Seccion {
   id: string;
@@ -82,17 +82,56 @@ export const SECCIONES: Seccion[] = [
   },
 ];
 
-const leerRuta = () => window.location.hash.replace(/^#\/?/, "") || "panorama";
+// El hash lleva la sección y, después de «?», el estado de sus filtros:
+// #transporte?metrica=paradas_por_km2&distrito=96. Así cada vista se puede compartir con un enlace.
+const EVENTO_PARAMETROS = "parametros-url";
+
+function partesHash(): [string, URLSearchParams] {
+  const [ruta, consulta = ""] = window.location.hash.replace(/^#\/?/, "").split("?");
+  return [ruta || "panorama", new URLSearchParams(consulta)];
+}
 
 export function useRuta(): string {
-  const [ruta, setRuta] = useState(leerRuta);
+  const [ruta, setRuta] = useState(() => partesHash()[0]);
   useEffect(() => {
     const alCambiar = () => {
-      setRuta(leerRuta());
-      window.scrollTo({ top: 0 });
+      const nueva = partesHash()[0];
+      setRuta((actual) => {
+        if (actual !== nueva) window.scrollTo({ top: 0 });
+        return nueva;
+      });
     };
     window.addEventListener("hashchange", alCambiar);
     return () => window.removeEventListener("hashchange", alCambiar);
   }, []);
   return ruta;
+}
+
+/** Un filtro guardado en la URL. Cambiarlo reemplaza la entrada del historial (no agrega una). */
+export function useParametro(clave: string): [string | null, (valor: string | null) => void] {
+  const [valor, setValor] = useState(() => partesHash()[1].get(clave));
+
+  useEffect(() => {
+    const alCambiar = () => setValor(partesHash()[1].get(clave));
+    window.addEventListener("hashchange", alCambiar);
+    window.addEventListener(EVENTO_PARAMETROS, alCambiar);
+    return () => {
+      window.removeEventListener("hashchange", alCambiar);
+      window.removeEventListener(EVENTO_PARAMETROS, alCambiar);
+    };
+  }, [clave]);
+
+  const cambiar = useCallback(
+    (nuevo: string | null) => {
+      const [ruta, parametros] = partesHash();
+      if (nuevo === null) parametros.delete(clave);
+      else parametros.set(clave, nuevo);
+      const consulta = parametros.toString();
+      window.history.replaceState(null, "", `#${ruta}${consulta ? `?${consulta}` : ""}`);
+      window.dispatchEvent(new Event(EVENTO_PARAMETROS));
+    },
+    [clave],
+  );
+
+  return [valor, cambiar];
 }

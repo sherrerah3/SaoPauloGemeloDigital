@@ -11,6 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import CodigoPregunta from "../componentes/CodigoPregunta";
 import MapaDistritos from "../componentes/MapaDistritos";
 import TarjetaIndicador from "../componentes/TarjetaIndicador";
 import {
@@ -23,6 +24,7 @@ import {
   type IndiceSeccion,
   tieneValor,
 } from "../datos";
+import { useParametro } from "../rutas";
 
 const METRICAS = [
   { clave: "empleos_formales", etiqueta: "Empleos formales" },
@@ -35,19 +37,20 @@ const AZUL = "var(--serie-1)";
 
 export default function Empleo() {
   const [indice, setIndice] = useState<IndiceSeccion>();
-  const [anio, setAnio] = useState<string>();
+  const [anioUrl, setAnio] = useParametro("anio");
   const [datosAnio, setDatosAnio] = useState<Indicador[]>([]);
-  const [metrica, setMetrica] = useState<(typeof METRICAS)[number]["clave"]>("empleos_formales");
-  const [distrito, setDistrito] = useState<string | null>(null);
+  const [metricaUrl, setMetrica] = useParametro("metrica");
+  const [distrito, setDistrito] = useParametro("distrito");
   const [serie, setSerie] = useState<Indicador[]>([]);
   const [verTabla, setVerTabla] = useState(false);
 
   useEffect(() => {
-    cargar<IndiceSeccion>("indicadores/empleo/indice.json").then((i) => {
-      setIndice(i);
-      setAnio(i.anios[i.anios.length - 1]);
-    });
+    cargar<IndiceSeccion>("indicadores/empleo/indice.json").then(setIndice);
   }, []);
+
+  // Lo que viene en la URL se valida; si no sirve, se usa el valor por defecto.
+  const anio = anioUrl && indice?.anios.includes(anioUrl) ? anioUrl : indice?.anios.at(-1);
+  const metrica = METRICAS.find((m) => m.clave === metricaUrl)?.clave ?? "empleos_formales";
 
   useEffect(() => {
     if (!anio) return;
@@ -87,7 +90,9 @@ export default function Empleo() {
   return (
     <section className="seccion">
       <header className="seccion-cabecera">
-        <p className="antetitulo">Pregunta P2</p>
+        <p className="rotulo-pregunta">
+          <CodigoPregunta codigo="P2" /> Pregunta 2
+        </p>
         <h1>¿Cómo se distribuye el empleo formal entre los distritos?</h1>
         <p className="entrada">
           Empleos y establecimientos con registro formal (RAIS) en los 96 distritos, 2011 a 2024. Muestra dónde trabaja
@@ -123,12 +128,12 @@ export default function Empleo() {
 
       <div className="rejilla-tarjetas">
         <TarjetaIndicador
-          titulo={`Empleos formales · ${nombreTerritorio}`}
+          titulo={`Empleos formales en ${nombreTerritorio}`}
           indicador={busca("empleos_formales")}
           destacado
         />
         <TarjetaIndicador
-          titulo={`Establecimientos · ${nombreTerritorio}`}
+          titulo={`Establecimientos en ${nombreTerritorio}`}
           indicador={busca("establecimientos_formales")}
         />
         {distrito && (
@@ -215,7 +220,7 @@ export default function Empleo() {
 
       <div className="panel">
         <h2>
-          {etiquetaSerie} · {nombreTerritorio}, 2011-2024
+          {etiquetaSerie} en {nombreTerritorio}, 2011-2024
         </h2>
         <ResponsiveContainer width="100%" height={260}>
           <LineChart data={serieMetrica} margin={{ left: 8, right: 16, top: 8 }}>

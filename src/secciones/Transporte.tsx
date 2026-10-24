@@ -11,6 +11,7 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
+import CodigoPregunta from "../componentes/CodigoPregunta";
 import MapaDistritos from "../componentes/MapaDistritos";
 import TarjetaIndicador from "../componentes/TarjetaIndicador";
 import {
@@ -22,6 +23,7 @@ import {
   type Indicador,
   tieneValor,
 } from "../datos";
+import { useParametro } from "../rutas";
 
 // «orden» decide el ranking: en cobertura interesa dónde falta, en densidad dónde sobra.
 const METRICAS = [
@@ -52,8 +54,9 @@ export default function Transporte() {
   const [datos, setDatos] = useState<Indicador[]>([]);
   const [radio, setRadio] = useState<number>();
   const [pasajeros, setPasajeros] = useState<ArchivoPasajeros | null>(null);
-  const [metrica, setMetrica] = useState<Clave>("cobertura_poblacion");
-  const [distrito, setDistrito] = useState<string | null>(null);
+  const [metricaUrl, setMetrica] = useParametro("metrica");
+  const [distrito, setDistrito] = useParametro("distrito");
+  const metrica: Clave = METRICAS.find((m) => m.clave === metricaUrl)?.clave ?? "cobertura_poblacion";
   const [verTabla, setVerTabla] = useState(false);
 
   useEffect(() => {
@@ -94,7 +97,9 @@ export default function Transporte() {
   return (
     <section className="seccion">
       <header className="seccion-cabecera">
-        <p className="antetitulo">Pregunta P1</p>
+        <p className="rotulo-pregunta">
+          <CodigoPregunta codigo="P1" /> Pregunta 1
+        </p>
         <h1>¿Qué tan cubierta está la ciudad por transporte público?</h1>
         <p className="entrada">
           Paradas de bus, líneas y estaciones de metro de GeoSampa cruzadas con la población del censo 2022 en los 96
@@ -123,7 +128,7 @@ export default function Transporte() {
 
       <div className="rejilla-tarjetas">
         <TarjetaIndicador
-          titulo={`Población cubierta · ${nombreTerritorio}`}
+          titulo={`Población cubierta en ${nombreTerritorio}`}
           indicador={busca("cobertura_poblacion")}
           destacado
         />
@@ -220,7 +225,7 @@ export default function Transporte() {
       {pasajeros && (
         <div className="rejilla-dos">
           <div className="panel">
-            <h2>Pasajeros transportados por mes · buses municipales</h2>
+            <h2>Pasajeros por mes en los buses municipales</h2>
             <ResponsiveContainer width="100%" height={280}>
               <LineChart data={serieMensual} margin={{ left: 8, right: 16, top: 8 }}>
                 <CartesianGrid vertical={false} stroke="var(--grilla)" />
@@ -236,8 +241,9 @@ export default function Transporte() {
               </LineChart>
             </ResponsiveContainer>
             <p className="nota">
-              F05 · SPTrans. Suma de los reportes diarios; un mes al que le falta algún día en el portal se completa con
-              el consolidado mensual de SPTrans. No se reparte por distrito porque la fuente no tiene geografía.
+              Fuente F05 (SPTrans). Suma de los reportes diarios; un mes al que le falta algún día en el portal se
+              completa con el consolidado mensual de SPTrans. No se reparte por distrito porque la fuente no tiene
+              geografía.
             </p>
           </div>
           <div className="panel">
