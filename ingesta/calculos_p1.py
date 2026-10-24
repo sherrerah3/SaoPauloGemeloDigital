@@ -3,6 +3,7 @@
 Todo se mide en EPSG:31983 (metros). Los resultados son derivados, no campos del lago:
 build_web.py los publica con su cálculo y data/derivados/ guarda una copia para revisar.
 """
+
 from __future__ import annotations
 
 import geopandas as gpd

@@ -1,8 +1,27 @@
 import { useEffect, useMemo, useState } from "react";
-import { Bar, BarChart, CartesianGrid, LabelList, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import TarjetaIndicador from "../componentes/TarjetaIndicador";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  LabelList,
+  Line,
+  LineChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import MapaDistritos from "../componentes/MapaDistritos";
-import { cargar, claveIndicador, formatear, formatearCorto, type ArchivoIndicadores, type Indicador } from "../datos";
+import TarjetaIndicador from "../componentes/TarjetaIndicador";
+import {
+  type ArchivoIndicadores,
+  cargar,
+  claveIndicador,
+  formatear,
+  formatearCorto,
+  type Indicador,
+  tieneValor,
+} from "../datos";
 
 // «orden» decide el ranking: en cobertura interesa dónde falta, en densidad dónde sobra.
 const METRICAS = [
@@ -52,12 +71,12 @@ export default function Transporte() {
     () => datos.filter((i) => i.nivel === "distrito" && claveIndicador(i) === metrica),
     [datos, metrica],
   );
-  const valores = useMemo(() => Object.fromEntries(delDistrito.map((i) => [i.codigo_territorio, i.valor])), [delDistrito]);
+  const valores = useMemo(
+    () => Object.fromEntries(delDistrito.map((i) => [i.codigo_territorio, i.valor])),
+    [delDistrito],
+  );
   const ranking = useMemo(
-    () =>
-      [...delDistrito]
-        .filter((i) => i.valor !== null)
-        .sort((a, b) => (def.orden === "asc" ? a.valor! - b.valor! : b.valor! - a.valor!)),
+    () => delDistrito.filter(tieneValor).sort((a, b) => (def.orden === "asc" ? a.valor - b.valor : b.valor - a.valor)),
     [delDistrito, def.orden],
   );
   const unidad = delDistrito[0]?.unidad ?? "";
@@ -84,7 +103,7 @@ export default function Transporte() {
         </p>
       </header>
 
-      <div className="filtros" role="group" aria-label="Filtros">
+      <div className="filtros">
         <label>
           Indicador
           <select value={metrica} onChange={(e) => setMetrica(e.target.value as Clave)}>
@@ -96,14 +115,18 @@ export default function Transporte() {
           </select>
         </label>
         {distrito && (
-          <button className="boton-secundario" onClick={() => setDistrito(null)}>
+          <button type="button" className="boton-secundario" onClick={() => setDistrito(null)}>
             Volver al municipio
           </button>
         )}
       </div>
 
       <div className="rejilla-tarjetas">
-        <TarjetaIndicador titulo={`Población cubierta · ${nombreTerritorio}`} indicador={busca("cobertura_poblacion")} destacado />
+        <TarjetaIndicador
+          titulo={`Población cubierta · ${nombreTerritorio}`}
+          indicador={busca("cobertura_poblacion")}
+          destacado
+        />
         <TarjetaIndicador titulo="Población cubierta solo por metro" indicador={busca("cobertura_poblacion_metro")} />
         <TarjetaIndicador titulo="Paradas de bus" indicador={busca("paradas_bus")} />
         <TarjetaIndicador titulo="Estaciones de metro" indicador={busca("estaciones_metro")} />
@@ -120,7 +143,7 @@ export default function Transporte() {
             <h2>
               Los 10 distritos con {def.orden === "asc" ? "menor" : "mayor"} {def.etiqueta.toLowerCase()}
             </h2>
-            <button className="enlace" onClick={() => setVerTabla((v) => !v)}>
+            <button type="button" className="enlace" onClick={() => setVerTabla((v) => !v)}>
               {verTabla ? "Ver gráfico" : "Ver tabla de los 96"}
             </button>
           </div>
@@ -139,7 +162,7 @@ export default function Transporte() {
                     <tr key={i.id} className={i.codigo_territorio === distrito ? "fila-activa" : ""}>
                       <td>{n + 1}</td>
                       <td>
-                        <button className="enlace" onClick={() => setDistrito(i.codigo_territorio)}>
+                        <button type="button" className="enlace" onClick={() => setDistrito(i.codigo_territorio)}>
                           {i.nombre_territorio}
                         </button>
                       </td>
@@ -152,7 +175,9 @@ export default function Transporte() {
           ) : (
             <ResponsiveContainer width="100%" height={360}>
               <BarChart
-                data={ranking.slice(0, 10).map((i) => ({ nombre: i.nombre_territorio, valor: i.valor, codigo: i.codigo_territorio }))}
+                data={ranking
+                  .slice(0, 10)
+                  .map((i) => ({ nombre: i.nombre_territorio, valor: i.valor, codigo: i.codigo_territorio }))}
                 layout="vertical"
                 margin={{ left: 8, right: 16 }}
                 barCategoryGap={4}
@@ -160,7 +185,11 @@ export default function Transporte() {
                 <CartesianGrid horizontal={false} stroke="var(--grilla)" />
                 <XAxis type="number" tickFormatter={formatearCorto} stroke="var(--texto-tenue)" fontSize={12} />
                 <YAxis type="category" dataKey="nombre" width={130} stroke="var(--texto-tenue)" fontSize={12} />
-                <Tooltip cursor={{ fill: "var(--superficie-2)" }} formatter={(v) => [formatear(Number(v), unidad), unidad]} {...ESTILO_TOOLTIP} />
+                <Tooltip
+                  cursor={{ fill: "var(--superficie-2)" }}
+                  formatter={(v) => [formatear(Number(v), unidad), unidad]}
+                  {...ESTILO_TOOLTIP}
+                />
                 <Bar
                   dataKey="valor"
                   fill={AZUL}
@@ -198,12 +227,17 @@ export default function Transporte() {
                 <XAxis dataKey="mes" stroke="var(--texto-tenue)" fontSize={12} />
                 <YAxis tickFormatter={formatearCorto} stroke="var(--texto-tenue)" fontSize={12} width={60} />
                 <Tooltip formatter={(v) => [formatear(Number(v)), "Pasajeros"]} {...ESTILO_TOOLTIP} />
-                <Line dataKey="valor" stroke={AZUL} strokeWidth={2} dot={{ r: 4, fill: AZUL, strokeWidth: 2, stroke: "var(--superficie)" }} />
+                <Line
+                  dataKey="valor"
+                  stroke={AZUL}
+                  strokeWidth={2}
+                  dot={{ r: 4, fill: AZUL, strokeWidth: 2, stroke: "var(--superficie)" }}
+                />
               </LineChart>
             </ResponsiveContainer>
             <p className="nota">
-              F05 · SPTrans. Suma de los reportes diarios; un mes al que le falta algún día en el portal se completa
-              con el consolidado mensual de SPTrans. No se reparte por distrito porque la fuente no tiene geografía.
+              F05 · SPTrans. Suma de los reportes diarios; un mes al que le falta algún día en el portal se completa con
+              el consolidado mensual de SPTrans. No se reparte por distrito porque la fuente no tiene geografía.
             </p>
           </div>
           <div className="panel">
@@ -218,7 +252,11 @@ export default function Transporte() {
                 <CartesianGrid horizontal={false} stroke="var(--grilla)" />
                 <XAxis type="number" tickFormatter={formatearCorto} stroke="var(--texto-tenue)" fontSize={12} />
                 <YAxis type="category" dataKey="nombre" width={190} stroke="var(--texto-tenue)" fontSize={11} />
-                <Tooltip cursor={{ fill: "var(--superficie-2)" }} formatter={(v) => [formatear(Number(v)), "Pasajeros"]} {...ESTILO_TOOLTIP} />
+                <Tooltip
+                  cursor={{ fill: "var(--superficie-2)" }}
+                  formatter={(v) => [formatear(Number(v)), "Pasajeros"]}
+                  {...ESTILO_TOOLTIP}
+                />
                 <Bar dataKey="valor" fill={AZUL} radius={[0, 4, 4, 0]} />
               </BarChart>
             </ResponsiveContainer>

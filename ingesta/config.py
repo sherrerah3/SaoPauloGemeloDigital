@@ -2,6 +2,7 @@
 
 Lo que está aquí son decisiones del equipo: cambiarlas cambia lo que publica la app.
 """
+
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
@@ -21,10 +22,7 @@ CRS_TRABAJO = "EPSG:31983"  # SIRGAS2000 / UTM 23S
 CRS_WEB = "EPSG:4326"
 
 # Algunos servidores de la Prefeitura devuelven 403 sin un User-Agent de navegador.
-USER_AGENT = (
-    "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
-    "(KHTML, like Gecko) Chrome/126.0 Safari/537.36"
-)
+USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
 
 GEOSAMPA_WFS = "https://wfs.geosampa.prefeitura.sp.gov.br/geoserver/ows"
 

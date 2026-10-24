@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { cargar, type CampoDiccionario, type Fuente } from "../datos";
 import { useFuentes } from "../componentes/contexto";
+import { type CampoDiccionario, cargar, type Fuente } from "../datos";
 
 export default function Fuentes() {
   const fuentes = useFuentes();
@@ -27,8 +27,8 @@ export default function Fuentes() {
         <p className="antetitulo">Fuentes y método</p>
         <h1>De dónde sale cada cifra</h1>
         <p className="entrada">
-          Generado desde el Excel del lago (hojas Fuentes y Diccionario). Los campos clasificados como
-          «Sensible» no se publican en la app, o se publican solo como porcentaje.
+          Generado desde el Excel del lago (hojas Fuentes y Diccionario). Los campos clasificados como «Sensible» no se
+          publican en la app, o se publican solo como porcentaje.
         </p>
       </header>
 
@@ -42,7 +42,12 @@ export default function Fuentes() {
       <div className="filtros">
         <label>
           Buscar
-          <input type="search" value={filtro} onChange={(e) => setFiltro(e.target.value)} placeholder="ID, nombre o entidad" />
+          <input
+            type="search"
+            value={filtro}
+            onChange={(e) => setFiltro(e.target.value)}
+            placeholder="ID, nombre o entidad"
+          />
         </label>
       </div>
 
@@ -77,8 +82,8 @@ export default function Fuentes() {
         <li>Todo se procesa antes, en Python; el sitio solo sirve archivos estáticos.</li>
         <li>Se mide en EPSG:31983 (SIRGAS2000 UTM 23S, metros) y se publica en EPSG:4326.</li>
         <li>
-          Los nombres de distrito y subprefeitura se unen por una tabla de equivalencias construida desde las capas
-          de GeoSampa; si una unidad no encuentra pareja, la verificación falla.
+          Los nombres de distrito y subprefeitura se unen por una tabla de equivalencias construida desde las capas de
+          GeoSampa; si una unidad no encuentra pareja, la verificación falla.
         </li>
         <li>Las filas «inválidos» y «no localizados» se conservan en el lago y se excluyen de mapas y rankings.</li>
         <li>Correlación no es causalidad; los pesos del atlas son una decisión analítica.</li>
@@ -87,13 +92,24 @@ export default function Fuentes() {
   );
 }
 
-function FilaFuente({ fuente, campos, abierta, alternar }: { fuente: Fuente; campos: CampoDiccionario[]; abierta: boolean; alternar: () => void }) {
-  const claseEstado = fuente.estado === "Integrada al lago" ? "integrada" : fuente.estado === "Descartada" ? "descartada" : "candidata";
+function FilaFuente({
+  fuente,
+  campos,
+  abierta,
+  alternar,
+}: {
+  fuente: Fuente;
+  campos: CampoDiccionario[];
+  abierta: boolean;
+  alternar: () => void;
+}) {
+  const claseEstado =
+    fuente.estado === "Integrada al lago" ? "integrada" : fuente.estado === "Descartada" ? "descartada" : "candidata";
   return (
     <>
       <tr>
         <td>
-          <button className="enlace" onClick={alternar} aria-expanded={abierta} disabled={!campos.length}>
+          <button type="button" className="enlace" onClick={alternar} aria-expanded={abierta} disabled={!campos.length}>
             {fuente.fuente_id}
           </button>
         </td>
@@ -128,10 +144,18 @@ function FilaFuente({ fuente, campos, abierta, alternar }: { fuente: Fuente; cam
               <tbody>
                 {campos.map((c) => (
                   <tr key={c.campo}>
-                    <td><code>{c.campo}</code></td>
+                    <td>
+                      <code>{c.campo}</code>
+                    </td>
                     <td>{c.significado}</td>
                     <td>{c.unidad}</td>
-                    <td>{c.clasificacion === "Sensible" ? <span className="etiqueta sensible">Sensible</span> : c.clasificacion}</td>
+                    <td>
+                      {c.clasificacion === "Sensible" ? (
+                        <span className="etiqueta sensible">Sensible</span>
+                      ) : (
+                        c.clasificacion
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>

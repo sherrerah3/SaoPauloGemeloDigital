@@ -7,6 +7,7 @@ F05 se publica como un archivo por día y también como consolidados mensuales. 
 principal es la suma de los días (solo meses completos); el consolidado solo llena un mes al
 que le falta algún día, y solo si el mes de su nombre coincide con el de su encabezado.
 """
+
 from __future__ import annotations
 
 import calendar
@@ -17,14 +18,14 @@ import geopandas as gpd
 import pandas as pd
 import requests
 
-from comun import (a_numero, descargar, guardar_lago, guardar_lago_geo, leer_capa_geosampa,
-                   leer_excel, normalizar_nombre)
+from comun import a_numero, descargar, guardar_lago, guardar_lago_geo, leer_capa_geosampa, leer_excel, normalizar_nombre
 from config import USER_AGENT
 
 OPERADORES = {"METRO": "Metrô", "VIAQUATRO": "ViaQuatro", "VIAMOBILIDADE": "ViaMobilidade", "CPTM": "CPTM"}
 
 
 # --- Capas (F29, F30, F31, F35, F36) ---------------------------------------
+
 
 def hora(valor) -> str | None:
     """«1970-01-01T06:20:00Z» → «06:20:00». GeoSampa guarda la hora como fecha de 1970."""
@@ -34,52 +35,72 @@ def hora(valor) -> str | None:
 
 def buses() -> gpd.GeoDataFrame:
     g = leer_capa_geosampa("geoportal:linha_onibus", "geosampa_linha_onibus")
-    return gpd.GeoDataFrame({
-        "codigo_linea": g["cd_linha_geometria"].astype(str),
-        "nombre_recorrido": g["nm_linha_onibus_geometria"],
-        "sentido": g["sentido_linha_onibus"],
-        "hora_primera_salida": g["ho_primeira_viagem"].map(hora),
-        "hora_ultima_salida": g["ho_ultima_viagem"].map(hora),
-        "operador": g["nm_empresa_metro_trem"],
-    }, geometry=g.geometry, crs=g.crs)
+    return gpd.GeoDataFrame(
+        {
+            "codigo_linea": g["cd_linha_geometria"].astype(str),
+            "nombre_recorrido": g["nm_linha_onibus_geometria"],
+            "sentido": g["sentido_linha_onibus"],
+            "hora_primera_salida": g["ho_primeira_viagem"].map(hora),
+            "hora_ultima_salida": g["ho_ultima_viagem"].map(hora),
+            "operador": g["nm_empresa_metro_trem"],
+        },
+        geometry=g.geometry,
+        crs=g.crs,
+    )
 
 
 def paradas() -> gpd.GeoDataFrame:
     g = leer_capa_geosampa("geoportal:ponto_onibus", "geosampa_ponto_onibus")
-    return gpd.GeoDataFrame({
-        "codigo_parada": g["cd_identificador_ponto_onibus"].astype(str),
-        "calle_numero": g["nm_ponto_onibus"],
-        "referencia_cruce": g["tx_endereco_ponto_onibus"],
-    }, geometry=g.geometry, crs=g.crs)
+    return gpd.GeoDataFrame(
+        {
+            "codigo_parada": g["cd_identificador_ponto_onibus"].astype(str),
+            "calle_numero": g["nm_ponto_onibus"],
+            "referencia_cruce": g["tx_endereco_ponto_onibus"],
+        },
+        geometry=g.geometry,
+        crs=g.crs,
+    )
 
 
 def tren() -> gpd.GeoDataFrame:
     g = leer_capa_geosampa("geoportal:linha_trem", "geosampa_linha_trem")
-    return gpd.GeoDataFrame({
-        "codigo_linea": g["cd_identificador_linha"].astype(int),
-        "nombre_linea": g["nm_linha_metro_trem"],
-        "operador": g["nm_empresa_metro_trem"].map(lambda v: OPERADORES.get(v, v)),
-    }, geometry=g.geometry, crs=g.crs)
+    return gpd.GeoDataFrame(
+        {
+            "codigo_linea": g["cd_identificador_linha"].astype(int),
+            "nombre_linea": g["nm_linha_metro_trem"],
+            "operador": g["nm_empresa_metro_trem"].map(lambda v: OPERADORES.get(v, v)),
+        },
+        geometry=g.geometry,
+        crs=g.crs,
+    )
 
 
 def metro() -> gpd.GeoDataFrame:
     g = leer_capa_geosampa("geoportal:linha_metro", "geosampa_linha_metro")
-    return gpd.GeoDataFrame({
-        "codigo_linea": g["cd_identificador_linha"].astype(int),
-        "nombre_linea": g["nm_linha_metro_trem"].replace({"LILAS": "LILÁS"}),
-        "operador": g["nm_empresa_metro_trem"].map(lambda v: OPERADORES.get(v, v)),
-        "modo": "metro",
-    }, geometry=g.geometry, crs=g.crs)
+    return gpd.GeoDataFrame(
+        {
+            "codigo_linea": g["cd_identificador_linha"].astype(int),
+            "nombre_linea": g["nm_linha_metro_trem"].replace({"LILAS": "LILÁS"}),
+            "operador": g["nm_empresa_metro_trem"].map(lambda v: OPERADORES.get(v, v)),
+            "modo": "metro",
+        },
+        geometry=g.geometry,
+        crs=g.crs,
+    )
 
 
 def estaciones() -> gpd.GeoDataFrame:
     g = leer_capa_geosampa("geoportal:estacao_metro", "geosampa_estacao_metro")
-    return gpd.GeoDataFrame({
-        "id_estacion": g["cd_identificador"].astype(int),
-        "nombre_estacion": g["nm_estacao_metro_trem"],
-        "codigo_linea": g["cd_identificador_linha"].astype(int),
-        "situacion": g["tx_situacao_metro_trem"],
-    }, geometry=g.geometry, crs=g.crs)
+    return gpd.GeoDataFrame(
+        {
+            "id_estacion": g["cd_identificador"].astype(int),
+            "nombre_estacion": g["nm_estacao_metro_trem"],
+            "codigo_linea": g["cd_identificador_linha"].astype(int),
+            "situacion": g["tx_situacao_metro_trem"],
+        },
+        geometry=g.geometry,
+        crs=g.crs,
+    )
 
 
 # --- Pasajeros (F05) --------------------------------------------------------
@@ -103,11 +124,35 @@ COLUMNAS_F05 = {
 }
 
 
-MESES_PT = {"JAN": 1, "FEV": 2, "MAR": 3, "ABR": 4, "MAI": 5, "JUN": 6,
-            "JUL": 7, "AGO": 8, "SET": 9, "OUT": 10, "NOV": 11, "DEZ": 12}
+MESES_PT = {
+    "JAN": 1,
+    "FEV": 2,
+    "MAR": 3,
+    "ABR": 4,
+    "MAI": 5,
+    "JUN": 6,
+    "JUL": 7,
+    "AGO": 8,
+    "SET": 9,
+    "OUT": 10,
+    "NOV": 11,
+    "DEZ": 12,
+}
 SUMAS = ("pasajeros_pagantes", "pasajeros_integracion", "pasajeros_gratuidad", "pasajeros_total")
-MESES_NOMBRE = {"janeiro": 1, "fevereiro": 2, "marco": 3, "abril": 4, "maio": 5, "junho": 6, "julho": 7,
-                "agosto": 8, "setembro": 9, "outubro": 10, "novembro": 11, "dezembro": 12}
+MESES_NOMBRE = {
+    "janeiro": 1,
+    "fevereiro": 2,
+    "marco": 3,
+    "abril": 4,
+    "maio": 5,
+    "junho": 6,
+    "julho": 7,
+    "agosto": 8,
+    "setembro": 9,
+    "outubro": 10,
+    "novembro": 11,
+    "dezembro": 12,
+}
 
 
 def nombre_columna(valor) -> str:
@@ -143,7 +188,7 @@ def leer_reporte(ruta) -> pd.DataFrame:
     crudo = leer_excel(ruta)
     primera = crudo[0].fillna("").astype(str).map(normalizar_nombre)
     fila = primera[primera.isin(["data", "grupo"])].index[0]
-    tabla = crudo.iloc[fila + 1:].copy()
+    tabla = crudo.iloc[fila + 1 :].copy()
     tabla.columns = [nombre_columna(v) for v in crudo.iloc[fila]]
     tabla = tabla[[c for c in COLUMNAS_F05 if c in tabla.columns]].rename(columns=COLUMNAS_F05)
     tabla = tabla[tabla["linha"].notna()].copy()
@@ -173,10 +218,11 @@ def leer_reporte(ruta) -> pd.DataFrame:
 
 
 def mensual_por_linea(df: pd.DataFrame) -> pd.DataFrame:
-    return (df.sort_values("fecha")
-              .groupby(["anio", "mes", "codigo_linea"], as_index=False)
-              .agg(nombre_linea=("nombre_linea", "last"), grupo=("grupo", "last"),
-                   **{c: (c, "sum") for c in SUMAS}))
+    return (
+        df.sort_values("fecha")
+        .groupby(["anio", "mes", "codigo_linea"], as_index=False)
+        .agg(nombre_linea=("nombre_linea", "last"), grupo=("grupo", "last"), **{c: (c, "sum") for c in SUMAS})
+    )
 
 
 def pasajeros() -> pd.DataFrame:
@@ -224,8 +270,10 @@ def pasajeros() -> pd.DataFrame:
         fuente = "se usa el consolidado" if (a, m) in t_cons.index else "sin consolidado, se excluye"
         print(f"  F05 {a}-{m:02d}: {n} de {calendar.monthrange(a, m)[1]} días; {fuente}")
 
-    faltantes = cons[~cons.set_index(["anio", "mes"]).index.isin(completos)
-                     & cons.set_index(["anio", "mes"]).index.isin(dias_por_mes.index)]
+    faltantes = cons[
+        ~cons.set_index(["anio", "mes"]).index.isin(completos)
+        & cons.set_index(["anio", "mes"]).index.isin(dias_por_mes.index)
+    ]
     mensual = pd.concat([diario, faltantes], ignore_index=True).sort_values(["anio", "mes", "codigo_linea"])
     for col in SUMAS:
         mensual[col] = mensual[col].round().astype("Int64")
@@ -243,8 +291,10 @@ def main():
         # Unión con F29: el código de F05 es el de F29 sin guion («1012-10» → «101210»).
         codigos_f29 = set(capas["buses"]["codigo_linea"].str.replace("-", "", regex=False))
         cruza = mensual["codigo_linea"].isin(codigos_f29)
-        print(f"  F05 → F29: cruzan {cruza.mean():.1%} de las filas y "
-              f"{mensual.loc[cruza, 'pasajeros_total'].sum() / mensual['pasajeros_total'].sum():.1%} de los pasajeros")
+        print(
+            f"  F05 → F29: cruzan {cruza.mean():.1%} de las filas y "
+            f"{mensual.loc[cruza, 'pasajeros_total'].sum() / mensual['pasajeros_total'].sum():.1%} de los pasajeros"
+        )
 
 
 if __name__ == "__main__":

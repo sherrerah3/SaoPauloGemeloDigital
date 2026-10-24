@@ -3,6 +3,7 @@
 El Excel sigue siendo la fuente de verdad del catálogo; los CSV son lo que leen los
 scripts y la página «Fuentes y método». Correr de nuevo cada vez que se edite el Excel.
 """
+
 import openpyxl
 import pandas as pd
 

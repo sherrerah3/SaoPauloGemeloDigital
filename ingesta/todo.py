@@ -6,6 +6,7 @@
 
 Funciona igual en local (.venv) y en Docker: usa el mismo Python que lo ejecuta.
 """
+
 import subprocess
 import sys
 from pathlib import Path

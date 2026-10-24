@@ -10,24 +10,85 @@ export interface Seccion {
 
 // Secciones de la v1 (sección 8 del plan). «lista» indica si ya tiene datos en public/data/.
 export const SECCIONES: Seccion[] = [
-  { id: "panorama", titulo: "Panorama", resumen: "Cifras clave de la ciudad y acceso a las dos preguntas.", fuentes: ["F01", "F08", "F04", "F05", "F11", "F12"], lista: true },
-  { id: "mapa", titulo: "Mapa 3D", resumen: "Edificios 3D y capas oficiales de GeoSampa.", fuentes: ["F29", "F30", "F31", "F32", "F33", "F34", "F35", "F36", "F39", "F40", "F41"], lista: true },
-  { id: "empleo", titulo: "Empleo", resumen: "P2 · Establecimientos y empleos formales por distrito.", fuentes: ["F11", "F12", "F13", "F14", "F15", "F16", "F17", "F22", "F23", "F24", "F28"], lista: true },
-  { id: "transporte", titulo: "Transporte y equipamientos", resumen: "P1 · Cobertura de transporte por distrito, pasajeros por línea, mercados, deporte y escuelas.", fuentes: ["F29", "F30", "F31", "F35", "F36", "F41", "F05", "F21", "F33", "F34", "F39", "F40"], lista: true },
-  { id: "gente", titulo: "Gente", resumen: "Población histórica, densidad por distrito, IDHM, nacimientos y favelas.", fuentes: ["F01", "F41", "F07", "F18", "F19", "F20", "F32"], lista: false },
-  { id: "municipio", titulo: "Municipio", resumen: "Ingresos y gastos por categoría 2016-2025 y establecimientos de salud.", fuentes: ["F04", "F03"], lista: false },
-  { id: "ambiente", titulo: "Ambiente", resumen: "Cobertura vegetal por subprefeitura y temperatura mínima.", fuentes: ["F25", "F26", "F27", "F06"], lista: false },
-  { id: "atlas", titulo: "Atlas y correlaciones", resumen: "Índice por distrito con pesos ajustables y correlaciones en dos escalas.", fuentes: [], lista: false },
-  { id: "fuentes", titulo: "Fuentes y método", resumen: "Catálogo y diccionario generados desde el Excel.", fuentes: [], lista: true },
-  { id: "no-cubrimos", titulo: "Lo que no cubrimos", resumen: "Lo que el lago no permite responder todavía.", fuentes: [], lista: true },
+  {
+    id: "panorama",
+    titulo: "Panorama",
+    resumen: "Cifras clave de la ciudad y acceso a las dos preguntas.",
+    fuentes: ["F01", "F08", "F04", "F05", "F11", "F12"],
+    lista: true,
+  },
+  {
+    id: "mapa",
+    titulo: "Mapa 3D",
+    resumen: "Edificios 3D y capas oficiales de GeoSampa.",
+    fuentes: ["F29", "F30", "F31", "F32", "F33", "F34", "F35", "F36", "F39", "F40", "F41"],
+    lista: true,
+  },
+  {
+    id: "empleo",
+    titulo: "Empleo",
+    resumen: "P2 · Establecimientos y empleos formales por distrito.",
+    fuentes: ["F11", "F12", "F13", "F14", "F15", "F16", "F17", "F22", "F23", "F24", "F28"],
+    lista: true,
+  },
+  {
+    id: "transporte",
+    titulo: "Transporte y equipamientos",
+    resumen: "P1 · Cobertura de transporte por distrito, pasajeros por línea, mercados, deporte y escuelas.",
+    fuentes: ["F29", "F30", "F31", "F35", "F36", "F41", "F05", "F21", "F33", "F34", "F39", "F40"],
+    lista: true,
+  },
+  {
+    id: "gente",
+    titulo: "Gente",
+    resumen: "Población histórica, densidad por distrito, IDHM, nacimientos y favelas.",
+    fuentes: ["F01", "F41", "F07", "F18", "F19", "F20", "F32"],
+    lista: false,
+  },
+  {
+    id: "municipio",
+    titulo: "Municipio",
+    resumen: "Ingresos y gastos por categoría 2016-2025 y establecimientos de salud.",
+    fuentes: ["F04", "F03"],
+    lista: false,
+  },
+  {
+    id: "ambiente",
+    titulo: "Ambiente",
+    resumen: "Cobertura vegetal por subprefeitura y temperatura mínima.",
+    fuentes: ["F25", "F26", "F27", "F06"],
+    lista: false,
+  },
+  {
+    id: "atlas",
+    titulo: "Atlas y correlaciones",
+    resumen: "Índice por distrito con pesos ajustables y correlaciones en dos escalas.",
+    fuentes: [],
+    lista: false,
+  },
+  {
+    id: "fuentes",
+    titulo: "Fuentes y método",
+    resumen: "Catálogo y diccionario generados desde el Excel.",
+    fuentes: [],
+    lista: true,
+  },
+  {
+    id: "no-cubrimos",
+    titulo: "Lo que no cubrimos",
+    resumen: "Lo que el lago no permite responder todavía.",
+    fuentes: [],
+    lista: true,
+  },
 ];
 
+const leerRuta = () => window.location.hash.replace(/^#\/?/, "") || "panorama";
+
 export function useRuta(): string {
-  const leer = () => window.location.hash.replace(/^#\/?/, "") || "panorama";
-  const [ruta, setRuta] = useState(leer);
+  const [ruta, setRuta] = useState(leerRuta);
   useEffect(() => {
     const alCambiar = () => {
-      setRuta(leer());
+      setRuta(leerRuta());
       window.scrollTo({ top: 0 });
     };
     window.addEventListener("hashchange", alCambiar);

@@ -1,0 +1,10 @@
+line-length = 120
+target-version = "py312"
+src = ["ingesta"]
+
+[lint]
+# Errores, imports, modernización, bugs comunes y simplificaciones.
+select = ["E", "W", "F", "I", "UP", "B", "SIM", "C4", "RUF"]
+ignore = [
+  "RUF001", "RUF002", "RUF003", # textos en español y portugués con tildes y comillas tipográficas
+]

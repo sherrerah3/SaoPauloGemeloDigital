@@ -3,6 +3,7 @@
 Cada regla sale de la columna «Transformación» del Diccionario. Se implementan una
 sola vez aquí y todos los scripts pull_*.py las usan.
 """
+
 from __future__ import annotations
 
 import datetime as dt
@@ -23,8 +24,10 @@ VACIOS = {"", "-", "–", "...", "…", "NI", "nan", "None"}
 
 # --- Descarga ---------------------------------------------------------------
 
-def descargar(url: str, nombre: str, extension: str, forzar: bool = False,
-              subcarpeta: str | None = None, pausa_s: float = 0) -> Path:
+
+def descargar(
+    url: str, nombre: str, extension: str, forzar: bool = False, subcarpeta: str | None = None, pausa_s: float = 0
+) -> Path:
     """Guarda el crudo en data/raw/[subcarpeta/]AAAA-MM-DD_<nombre>.<ext>.
 
     Si ya hay un crudo con ese nombre (de cualquier fecha) se reutiliza el más
@@ -42,7 +45,7 @@ def descargar(url: str, nombre: str, extension: str, forzar: bool = False,
         r = requests.get(url, headers={"User-Agent": USER_AGENT}, timeout=600)
         if r.status_code not in (429, 502, 503, 504):
             break
-        espera = int(r.headers.get("Retry-After", 0) or 0) or 15 * 2 ** intento
+        espera = int(r.headers.get("Retry-After", 0) or 0) or 15 * 2**intento
         print(f"  {r.status_code} en {url}; reintento en {espera} s")
         time.sleep(espera)
     r.raise_for_status()
@@ -53,8 +56,13 @@ def descargar(url: str, nombre: str, extension: str, forzar: bool = False,
 
 
 def url_wfs(capa: str) -> str:
-    params = {"service": "WFS", "version": "2.0.0", "request": "GetFeature",
-              "typeNames": capa, "outputFormat": "application/json"}
+    params = {
+        "service": "WFS",
+        "version": "2.0.0",
+        "request": "GetFeature",
+        "typeNames": capa,
+        "outputFormat": "application/json",
+    }
     return f"{GEOSAMPA_WFS}?{urlencode(params)}"
 
 
@@ -82,6 +90,7 @@ def leer_excel(ruta: Path, **kwargs) -> pd.DataFrame:
 
 
 # --- Valores ----------------------------------------------------------------
+
 
 def es_vacio(valor) -> bool:
     return valor is None or (isinstance(valor, float) and pd.isna(valor)) or str(valor).strip() in VACIOS
@@ -124,6 +133,7 @@ def como_texto_codigo(valor, digitos: int | None = None) -> str | None:
 
 
 # --- Texto ------------------------------------------------------------------
+
 
 def reparar_codificacion(texto):
     """Texto de GeoSampa leído con la codificación equivocada («SÃƒO» → «SÃO»)."""
@@ -204,9 +214,10 @@ def leer_tabla_unidades(ruta: Path, hoja=0) -> pd.DataFrame:
     if inicio.empty:
         raise ValueError(f"{ruta.name}: no se encontró el encabezado «Unidades Territoriais»")
     fila_enc = inicio[0]
-    encabezado = [limpiar_espacios(str(v)) if not es_vacio(v) else f"col{i}"
-                  for i, v in enumerate(crudo.iloc[fila_enc])]
-    cuerpo = crudo.iloc[fila_enc + 1:].copy()
+    encabezado = [
+        limpiar_espacios(str(v)) if not es_vacio(v) else f"col{i}" for i, v in enumerate(crudo.iloc[fila_enc])
+    ]
+    cuerpo = crudo.iloc[fila_enc + 1 :].copy()
     cuerpo.columns = encabezado
     nombres = cuerpo[encabezado[0]].fillna("").astype(str)
     fin = nombres[nombres.str.strip() == ""].index
@@ -219,7 +230,7 @@ def leer_tabla_unidades(ruta: Path, hoja=0) -> pd.DataFrame:
 
     subpref_actual = None
     padres = []
-    for nivel, nombre in zip(cuerpo["nivel"], cuerpo["unidad_territorial"]):
+    for nivel, nombre in zip(cuerpo["nivel"], cuerpo["unidad_territorial"], strict=True):
         if nivel == "subprefeitura":
             subpref_actual = nombre
         padres.append(subpref_actual if nivel in ("subprefeitura", "distrito") else None)
@@ -234,6 +245,7 @@ def ancho_a_largo(df: pd.DataFrame, id_cols: list[str], var: str, valor: str) ->
 
 
 # --- Territorio -------------------------------------------------------------
+
 
 def cargar_equivalencias() -> pd.DataFrame:
     if not EQUIVALENCIAS.exists():
@@ -254,8 +266,7 @@ def unir_distritos(df: pd.DataFrame, columna: str = "unidad_territorial") -> pd.
 
 
 def unir_subprefeituras(df: pd.DataFrame, columna: str = "unidad_territorial") -> pd.DataFrame:
-    eq = (cargar_equivalencias()[["codigo_subprefeitura", "subprefeitura_normalizada"]]
-          .drop_duplicates())
+    eq = cargar_equivalencias()[["codigo_subprefeitura", "subprefeitura_normalizada"]].drop_duplicates()
     df = df.copy()
     df["_clave"] = df[columna].map(normalizar_subprefeitura)
     df = df.merge(eq, how="left", left_on="_clave", right_on="subprefeitura_normalizada")
@@ -266,6 +277,7 @@ def unir_subprefeituras(df: pd.DataFrame, columna: str = "unidad_territorial") -
 
 
 # --- Salida -----------------------------------------------------------------
+
 
 def guardar_lago_geo(gdf: gpd.GeoDataFrame, nombre: str) -> Path:
     """Capas del lago: GeoJSON en EPSG:31983, igual que las entrega GeoSampa, para medir en metros."""

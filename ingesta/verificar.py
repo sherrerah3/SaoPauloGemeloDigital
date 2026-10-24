@@ -2,6 +2,7 @@
 
 Cada script de ingesta registra aquí su prueba (fase 2 del plan).
 """
+
 from __future__ import annotations
 
 import json
@@ -12,8 +13,17 @@ import pandas as pd
 import pyogrio
 
 from comun import cargar_equivalencias, unir_distritos, unir_subprefeituras
-from config import (CAMPOS_SENSIBLES, DATA, DICCIONARIO_CSV, FUENTES_CSV, LAGO, LAGO_GEO,
-                    MAX_MB_ARCHIVO_PUBLICO, PUBLIC_DATA, PUBLICACION_TRANSFORMADA)
+from config import (
+    CAMPOS_SENSIBLES,
+    DATA,
+    DICCIONARIO_CSV,
+    FUENTES_CSV,
+    LAGO,
+    LAGO_GEO,
+    MAX_MB_ARCHIVO_PUBLICO,
+    PUBLIC_DATA,
+    PUBLICACION_TRANSFORMADA,
+)
 
 # Archivo del lago → fuentes cuyos campos puede tener (según el Diccionario).
 ARCHIVOS_LAGO = {
@@ -26,8 +36,7 @@ ARCHIVOS_LAGO = {
     "geo/estaciones.geojson": ["F36"],
     "geo/densidad_sectores.geojson": ["F41"],
 }
-CAMPOS_CONTRATO = {"id", "campo_lago", "valor", "unidad", "nivel", "fuente_id",
-                   "vigencia", "tipo", "advertencia"}
+CAMPOS_CONTRATO = {"id", "campo_lago", "valor", "unidad", "nivel", "fuente_id", "vigencia", "tipo", "advertencia"}
 ADVERTENCIA_OBLIGATORIA = {"F05", "F06", "F08", "F11", "F12", "F25", "F26", "F27"}
 
 fallas: list[str] = []
@@ -46,17 +55,20 @@ def diccionario() -> pd.DataFrame:
 
 # --- Catálogo ---------------------------------------------------------------
 
+
 def verificar_catalogo():
     print("Catálogo")
     dicc = diccionario()
-    sensibles = (dicc[dicc.clasificacion.str.lower() == "sensible"]
-                 .groupby("fuente_id")["campo"].apply(set).to_dict())
-    prueba("config.CAMPOS_SENSIBLES coincide con el Diccionario",
-           sensibles == CAMPOS_SENSIBLES,
-           f"Diccionario: {sensibles}")
+    sensibles = dicc[dicc.clasificacion.str.lower() == "sensible"].groupby("fuente_id")["campo"].apply(set).to_dict()
+    prueba(
+        "config.CAMPOS_SENSIBLES coincide con el Diccionario",
+        sensibles == CAMPOS_SENSIBLES,
+        f"Diccionario: {sensibles}",
+    )
 
 
 # --- Lago -------------------------------------------------------------------
+
 
 def verificar_lago():
     print("Lago")
@@ -81,8 +93,7 @@ def verificar_territorio():
     print("Eje territorial")
     eq = cargar_equivalencias()
     prueba("96 distritos", len(eq) == 96, f"hay {len(eq)}")
-    prueba("32 subprefeituras", eq.codigo_subprefeitura.nunique() == 32,
-           f"hay {eq.codigo_subprefeitura.nunique()}")
+    prueba("32 subprefeituras", eq.codigo_subprefeitura.nunique() == 32, f"hay {eq.codigo_subprefeitura.nunique()}")
     prueba("códigos de distrito únicos", eq.codigo_distrito.is_unique)
 
 
@@ -95,14 +106,17 @@ def verificar_empleo():
     except ValueError as e:
         prueba("toda unidad cruza con la tabla de equivalencias", False, str(e))
     por_anio = df.groupby(["anio", "nivel"]).size().unstack()
-    prueba("96 distritos y 32 subprefeituras en cada año",
-           (por_anio["distrito"] == 96).all() and (por_anio["subprefeitura"] == 32).all())
+    prueba(
+        "96 distritos y 32 subprefeituras en cada año",
+        (por_anio["distrito"] == 96).all() and (por_anio["subprefeitura"] == 32).all(),
+    )
     for campo in ("establecimientos_formales", "empleos_formales"):
         t = df.pivot_table(index="anio", columns="nivel", values=campo, aggfunc="sum").fillna(0)
         cuadra = (t["distrito"] + t["invalidos"] + t["no_localizados"] - t["municipio"]).abs().max() == 0
         prueba(f"{campo}: distritos + inválidos + no localizados = municipio", cuadra)
-        prueba(f"{campo}: subprefeituras = suma de sus distritos",
-               (t["subprefeitura"] - t["distrito"]).abs().max() == 0)
+        prueba(
+            f"{campo}: subprefeituras = suma de sus distritos", (t["subprefeitura"] - t["distrito"]).abs().max() == 0
+        )
 
 
 def verificar_poblacion():
@@ -114,8 +128,11 @@ def verificar_poblacion():
     j = gpd.sjoin(centros, distritos.rename(columns={"codigo_distrito": "espacial"}), predicate="within")
     coincide = (j["codigo_distrito"] == j["espacial"]).mean()
     # La hipótesis del Diccionario («dígitos 8 y 9 = distrito, por verificar»), medida.
-    prueba("codigo_distrito (dígitos 8-9) = distrito que contiene al sector, en ≥ 99,5 %",
-           coincide >= 0.995, f"coincide {coincide:.2%}")
+    prueba(
+        "codigo_distrito (dígitos 8-9) = distrito que contiene al sector, en ≥ 99,5 %",
+        coincide >= 0.995,
+        f"coincide {coincide:.2%}",
+    )
     prueba("los 96 distritos tienen sectores", sectores["codigo_distrito"].nunique() == 96)
     prueba("códigos de sector únicos", sectores["codigo_sector"].is_unique)
 
@@ -128,8 +145,7 @@ def verificar_transporte():
     distritos = cob[cob.codigo_distrito != "MSP"]
     prueba("96 distritos con cobertura calculada", len(distritos) == 96)
     total = cob.set_index("codigo_distrito").loc["MSP"]
-    prueba("población de distritos = total del municipio",
-           abs(distritos["poblacion"].sum() - total["poblacion"]) < 1)
+    prueba("población de distritos = total del municipio", abs(distritos["poblacion"].sum() - total["poblacion"]) < 1)
     en_capa = pyogrio.read_info(LAGO_GEO / "paradas.geojson")["features"]
     fuera = en_capa - total["paradas_bus"]
     if fuera:
@@ -141,17 +157,26 @@ def verificar_transporte():
         return
     f05 = pd.read_csv(ruta, dtype={"codigo_linea": str})
     prueba("F05: una fila por línea y mes", not f05.duplicated(["anio", "mes", "codigo_linea"]).any())
-    periodos = pd.PeriodIndex(sorted({f"{a}-{m:02d}" for a, m in zip(f05.anio, f05.mes)}), freq="M")
+    periodos = pd.PeriodIndex(sorted({f"{a}-{m:02d}" for a, m in zip(f05.anio, f05.mes, strict=True)}), freq="M")
     seguidos = len(periodos) == (periodos.max() - periodos.min()).n + 1
-    prueba("F05: meses seguidos, sin huecos", seguidos, f"hay {len(periodos)} meses entre {periodos.min()} y {periodos.max()}")
-    prueba("F05: sin pasajeros negativos", (f05[[c for c in f05.columns if c.startswith("pasajeros")]] >= 0).all().all())
+    prueba(
+        "F05: meses seguidos, sin huecos",
+        seguidos,
+        f"hay {len(periodos)} meses entre {periodos.min()} y {periodos.max()}",
+    )
+    prueba(
+        "F05: sin pasajeros negativos", (f05[[c for c in f05.columns if c.startswith("pasajeros")]] >= 0).all().all()
+    )
     buses = gpd.read_file(LAGO_GEO / "buses.geojson", columns=["codigo_linea"], ignore_geometry=True)
     cruza = f05["codigo_linea"].isin(set(buses["codigo_linea"].str.replace("-", "", regex=False)))
-    avisos.append(f"F05 → F29 (código sin guion): cruzan {cruza.mean():.1%} de las filas, "
-                  f"{f05.loc[cruza, 'pasajeros_total'].sum() / f05['pasajeros_total'].sum():.1%} de los pasajeros")
+    avisos.append(
+        f"F05 → F29 (código sin guion): cruzan {cruza.mean():.1%} de las filas, "
+        f"{f05.loc[cruza, 'pasajeros_total'].sum() / f05['pasajeros_total'].sum():.1%} de los pasajeros"
+    )
 
 
 # --- public/data ------------------------------------------------------------
+
 
 def verificar_publico():
     print("public/data")
@@ -170,12 +195,14 @@ def verificar_publico():
         if isinstance(datos, dict) and "indicadores" in datos:
             for r in datos["indicadores"]:
                 usadas.add(r["fuente_id"])
-                if not CAMPOS_CONTRATO <= set(r) or r["tipo"] not in {"observado", "estimado", "proxy", "declarado"}:
+                if not set(r) >= CAMPOS_CONTRATO or r["tipo"] not in {"observado", "estimado", "proxy", "declarado"}:
                     malos_contrato.append(f"{rel}:{r.get('id')}")
                 if r["campo_lago"] not in campos_por_fuente.get(r["fuente_id"], set()):
                     campos_inexistentes.append(f"{r['fuente_id']}.{r['campo_lago']}")
-                if (r["campo_lago"] in CAMPOS_SENSIBLES.get(r["fuente_id"], set())
-                        and (r["fuente_id"], r["campo_lago"]) not in PUBLICACION_TRANSFORMADA):
+                if (
+                    r["campo_lago"] in CAMPOS_SENSIBLES.get(r["fuente_id"], set())
+                    and (r["fuente_id"], r["campo_lago"]) not in PUBLICACION_TRANSFORMADA
+                ):
                     sensibles_publicados.append(f"{rel}:{r['id']}")
                 if r["fuente_id"] in ADVERTENCIA_OBLIGATORIA and not r.get("advertencia"):
                     sin_advertencia.append(r["id"])
@@ -189,10 +216,12 @@ def verificar_publico():
 
     prueba("ningún archivo supera el límite", not grandes, ", ".join(grandes))
     prueba("todos los indicadores cumplen el contrato", not malos_contrato, ", ".join(malos_contrato[:5]))
-    prueba("todo campo_lago existe en el Diccionario para su fuente", not campos_inexistentes,
-           ", ".join(sorted(set(campos_inexistentes))))
-    prueba("ningún campo Sensible llega a public/data", not sensibles_publicados,
-           ", ".join(sensibles_publicados[:5]))
+    prueba(
+        "todo campo_lago existe en el Diccionario para su fuente",
+        not campos_inexistentes,
+        ", ".join(sorted(set(campos_inexistentes))),
+    )
+    prueba("ningún campo Sensible llega a public/data", not sensibles_publicados, ", ".join(sensibles_publicados[:5]))
     prueba("advertencias obligatorias presentes", not sin_advertencia, ", ".join(sin_advertencia[:5]))
 
     pendientes = [f for f in sorted(usadas) if fuentes.loc[f, "estado"] != "Integrada al lago"]

@@ -76,6 +76,11 @@ export function cargar<T>(ruta: string): Promise<T> {
   return cache.get(ruta) as Promise<T>;
 }
 
+/** Para filtrar indicadores con cifra: después del filtro, `valor` ya no es null. */
+export function tieneValor(i: Indicador): i is Indicador & { valor: number } {
+  return i.valor !== null;
+}
+
 /** El id de un indicador sin la parte de territorio y año: «empleos_formales_participacion». */
 export function claveIndicador(i: Indicador): string {
   return i.id.slice(0, i.id.indexOf(`_${i.nivel}_`));
