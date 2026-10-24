@@ -58,12 +58,31 @@ npm run datos       # pipeline completo (ingesta/todo.py)
 npm run datos:web   # solo build_web + verificar
 npm run dev         # http://localhost:5173
 npm run build       # lo mismo que corre Vercel
+npm run lint        # Biome (TS, CSS, JSON) y Ruff (Python): formato y lint
+npm run formato     # aplica el formato y los arreglos automáticos
 ```
 
 Para un solo paso: `cd ingesta && ../.venv/bin/python pull_empleo.py`.
 
 La primera descarga de F05 tarda (un archivo por día, y el servidor de la Prefeitura responde 429 si se le
 pide rápido); después se reutilizan los crudos de `data/raw/f05/`.
+
+## Calidad del código
+
+- **Front:** [Biome](https://biomejs.dev) (`biome.json`), 2 espacios y 120 columnas, imports ordenados.
+- **Ingesta:** [Ruff](https://docs.astral.sh/ruff/) (`ruff.toml`), 4 espacios y 120 columnas.
+- Antes de un commit: `npm run formato && npm run lint && npm run verificar`.
+
+## Mapas
+
+`src/componentes/mapaBase.ts` arma el mapa base de OpenFreeMap solo para São Paulo: la fuente vectorial
+declara `bounds` (MapLibre no pide teselas fuera de la ciudad), se quita el relieve mundial de Natural Earth
+y una máscara (`territorio/municipio.geojson`, generada en `build_web.py`) tapa lo que queda fuera del
+municipio. La cámara no puede salir de `LIMITES_NAVEGACION`. En modo oscuro se usa el estilo `dark` con los
+edificios 3D agregados con la misma regla que Liberty.
+
+El tema (claro u oscuro) sigue al sistema hasta que el usuario lo cambia con el botón de la cabecera; la
+elección se guarda en `localStorage`. `index.html` lo aplica antes del primer pintado.
 
 ## Agregar una fuente
 

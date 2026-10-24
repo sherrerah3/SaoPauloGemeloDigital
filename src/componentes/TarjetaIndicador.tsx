@@ -27,9 +27,9 @@ export default function TarjetaIndicador({ titulo, indicador, destacado }: Props
   }
   const fuente = fuentes[indicador.fuente_id];
   return (
-    <article className={destacado ? "tarjeta destacada" : "tarjeta"}>
+    <article className="tarjeta">
       <h3>{titulo}</h3>
-      <p className="cifra">
+      <p className={destacado ? "cifra cifra-destacada" : "cifra"}>
         {formatear(indicador.valor, indicador.unidad)}
         {!indicador.unidad.startsWith("%") && <span className="unidad"> {indicador.unidad.toLowerCase()}</span>}
       </p>
