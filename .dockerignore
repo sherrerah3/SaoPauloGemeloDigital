@@ -1,0 +1,8 @@
+node_modules
+.venv
+dist
+.git
+**/__pycache__
+# Los datos se montan como volumen; no hace falta copiarlos a la imagen.
+data
+public/data

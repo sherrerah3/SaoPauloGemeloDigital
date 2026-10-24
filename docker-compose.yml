@@ -1,0 +1,38 @@
+# docker compose run --rm datos          pipeline completo (descarga, lago, public/data, verificación)
+# docker compose run --rm datos python ingesta/todo.py --sin-pasajeros
+# docker compose up web                  sitio en http://localhost:5173
+# docker compose run --rm build          compila el sitio a ./dist (lo mismo que hace Vercel)
+#
+# El código y los datos se montan desde la carpeta del proyecto: lo que se edita o se
+# descarga queda en tu máquina, no dentro del contenedor.
+
+x-proyecto: &proyecto
+  build: .
+  image: sao-paulo-gemelo-digital
+  # Corre con tu usuario: lo que escribe en data/ y public/ no queda con dueño root.
+  # En Linux: export UID GID (o crea un .env con UID=... GID=...). En Windows y Mac no hace falta.
+  user: "${UID:-1000}:${GID:-1000}"
+  volumes:
+    - ./ingesta:/app/ingesta
+    - ./data:/app/data
+    - ./public:/app/public
+    - ./src:/app/src
+    - ./index.html:/app/index.html
+    - ./dist:/app/dist
+
+services:
+  datos:
+    <<: *proyecto
+    command: python ingesta/todo.py
+
+  web:
+    <<: *proyecto
+    command: npx vite --host 0.0.0.0 --port 5173
+    environment:
+      VITE_POLLING: "1" # en Windows y Mac los cambios en volúmenes no avisan sin sondeo
+    ports:
+      - "5173:5173"
+
+  build:
+    <<: *proyecto
+    command: npm run build
