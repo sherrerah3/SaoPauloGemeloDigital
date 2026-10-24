@@ -14,6 +14,11 @@ const Empleo = lazy(() => import("./secciones/Empleo"));
 const Mapa3D = lazy(() => import("./secciones/Mapa3D"));
 const Transporte = lazy(() => import("./secciones/Transporte"));
 
+// Las rutas viven en el hash, así que el salto no puede ser un enlace a #contenido: mueve el foco.
+function irAlContenido() {
+  document.getElementById("contenido")?.focus();
+}
+
 export default function App() {
   const ruta = useRuta();
   const [fuentes, setFuentes] = useState<Record<string, Fuente>>({});
@@ -33,10 +38,13 @@ export default function App() {
   return (
     <TemaContexto.Provider value={tema}>
       <FuentesContexto.Provider value={fuentes}>
+        <button type="button" className="saltar" onClick={irAlContenido}>
+          Saltar al contenido
+        </button>
         <header className="cabecera">
           <a href="#panorama" className="marca">
             <span className="marca-punto" aria-hidden />
-            São Paulo <span className="marca-sub">gemelo digital</span>
+            <span translate="no">São Paulo</span> <span className="marca-sub">gemelo digital</span>
           </a>
           <button
             type="button"
@@ -74,7 +82,7 @@ export default function App() {
           <BotonTema tema={tema} onAlternar={alternarTema} />
         </header>
 
-        <main className="contenido">
+        <main id="contenido" className="contenido" tabIndex={-1}>
           <Suspense fallback={<p className="nota">Cargando…</p>}>
             {seccion.id === "panorama" && <Panorama />}
             {seccion.id === "mapa" && <Mapa3D />}
