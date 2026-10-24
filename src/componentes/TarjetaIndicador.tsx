@@ -33,15 +33,13 @@ export default function TarjetaIndicador({ titulo, indicador, destacado }: Props
         {formatear(indicador.valor, indicador.unidad)}
         {!indicador.unidad.startsWith("%") && <span className="unidad"> {indicador.unidad.toLowerCase()}</span>}
       </p>
-      <p className="territorio">
-        {indicador.nombre_territorio} · {indicador.vigencia}
-      </p>
+      <p className="territorio">{indicador.nombre_territorio}</p>
       <dl className="metadatos">
         <div>
           <dt>Fuente</dt>
           <dd>
             {indicador.fuente_id}
-            {fuente ? ` · ${fuente.entidad}` : ""}
+            {fuente ? `, ${fuente.entidad}` : ""}
             {indicador.fuentes_adicionales?.length ? ` + ${indicador.fuentes_adicionales.join(", ")}` : ""}
           </dd>
         </div>

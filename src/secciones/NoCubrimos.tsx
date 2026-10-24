@@ -26,7 +26,6 @@ export default function NoCubrimos() {
   return (
     <section className="seccion">
       <header className="seccion-cabecera">
-        <p className="antetitulo">Límites</p>
         <h1>Lo que no cubrimos</h1>
         <p className="entrada">
           Esta app solo responde lo que su lago de datos sostiene. Esto es lo que queda por fuera de la versión 1.

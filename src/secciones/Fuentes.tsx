@@ -24,7 +24,6 @@ export default function Fuentes() {
   return (
     <section className="seccion">
       <header className="seccion-cabecera">
-        <p className="antetitulo">Fuentes y método</p>
         <h1>De dónde sale cada cifra</h1>
         <p className="entrada">
           Generado desde el Excel del lago (hojas Fuentes y Diccionario). Los campos clasificados como «Sensible» no se

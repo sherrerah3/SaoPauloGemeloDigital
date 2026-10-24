@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import CodigoPregunta from "../componentes/CodigoPregunta";
 import TarjetaIndicador from "../componentes/TarjetaIndicador";
 import { type ArchivoIndicadores, cargar, claveIndicador, type Indicador, type IndiceSeccion } from "../datos";
 import { SECCIONES } from "../rutas";
@@ -22,26 +23,29 @@ export default function Panorama() {
   return (
     <section className="seccion">
       <header className="portada">
-        <p className="antetitulo">96 distritos · 32 subprefeituras · datos abiertos oficiales</p>
         <h1>¿Dónde se mueve y dónde trabaja São Paulo?</h1>
         <p className="entrada">
-          Un gemelo digital construido solo con datos abiertos oficiales. Cada cifra trae su fuente, su vigencia y si es
-          observada o estimada.
+          Los 96 distritos y 32 subprefeituras de la ciudad, contados solo con datos abiertos oficiales. Cada cifra dice
+          de qué fuente sale, de cuándo es y si es observada o estimada.
         </p>
       </header>
 
       <div className="preguntas">
         <a href="#transporte" className="pregunta">
-          <span className="pregunta-codigo">P1</span>
-          <h2>¿Qué tan cubierta está la ciudad por transporte público, y dónde se concentran los equipamientos?</h2>
-          <p>Buses, tren, metro, centros comerciales, mercados y equipamientos deportivos.</p>
-          <span className="estado-listo">Cobertura de transporte disponible →</span>
+          <CodigoPregunta codigo="P1" />
+          <div className="pregunta-cuerpo">
+            <h2>¿Qué tan cubierta está la ciudad por transporte público, y dónde se concentran los equipamientos?</h2>
+            <p>Buses, tren, metro, centros comerciales, mercados y equipamientos deportivos.</p>
+            <span className="pregunta-accion">Ver cobertura de transporte</span>
+          </div>
         </a>
         <a href="#empleo" className="pregunta">
-          <span className="pregunta-codigo">P2</span>
-          <h2>¿Cómo se distribuye el empleo formal entre los distritos?</h2>
-          <p>Por distrito, por sexo y por raza o color.</p>
-          <span className="estado-listo">Empleo y establecimientos disponibles →</span>
+          <CodigoPregunta codigo="P2" />
+          <div className="pregunta-cuerpo">
+            <h2>¿Cómo se distribuye el empleo formal entre los distritos?</h2>
+            <p>Por distrito, por sexo y por raza o color.</p>
+            <span className="pregunta-accion">Ver empleo por distrito</span>
+          </div>
         </a>
       </div>
 

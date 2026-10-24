@@ -6,8 +6,10 @@ export default function Pendiente({ seccion }: { seccion: Seccion }) {
   return (
     <section className="seccion">
       <header className="seccion-cabecera">
-        <p className="antetitulo">En construcción</p>
         <h1>{seccion.titulo}</h1>
+        <p>
+          <span className="etiqueta">En construcción</span>
+        </p>
         <p className="entrada">{seccion.resumen}</p>
       </header>
       {seccion.fuentes.length > 0 && (

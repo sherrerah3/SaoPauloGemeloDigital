@@ -55,8 +55,7 @@ const CAPAS: Capa[] = [
     fuente: "F35",
     muestra: "#0455a1",
     capas: [{ id: "metro", type: "line", paint: { "line-color": COLOR_POR_LINEA, "line-width": 4 } }],
-    popup: (p) =>
-      `Metrô · línea ${p.codigo_linea} ${p.nombre_linea}<br><span class="popup-unidad">${p.operador}</span>`,
+    popup: (p) => `Metrô, línea ${p.codigo_linea} ${p.nombre_linea}<br><span class="popup-unidad">${p.operador}</span>`,
   },
   {
     id: "tren",
@@ -67,7 +66,7 @@ const CAPAS: Capa[] = [
     capas: [
       { id: "tren", type: "line", paint: { "line-color": COLOR_POR_LINEA, "line-width": 3, "line-dasharray": [2, 1] } },
     ],
-    popup: (p) => `Tren · línea ${p.codigo_linea} ${p.nombre_linea}<br><span class="popup-unidad">${p.operador}</span>`,
+    popup: (p) => `Tren, línea ${p.codigo_linea} ${p.nombre_linea}<br><span class="popup-unidad">${p.operador}</span>`,
   },
   {
     id: "estaciones",
@@ -88,7 +87,7 @@ const CAPAS: Capa[] = [
       },
     ],
     popup: (p) =>
-      `<strong>${p.nombre_estacion}</strong><br><span class="popup-unidad">Línea ${p.codigo_linea} · ${String(p.situacion).toLowerCase()}</span>`,
+      `<strong>${p.nombre_estacion}</strong><br><span class="popup-unidad">Línea ${p.codigo_linea}, ${String(p.situacion).toLowerCase()}</span>`,
   },
   {
     id: "red_bus",
@@ -273,7 +272,6 @@ export default function Mapa3D() {
   return (
     <section className="seccion">
       <header className="seccion-cabecera">
-        <p className="antetitulo">Mapa 3D</p>
         <h1>La ciudad en tres dimensiones</h1>
         <p className="entrada">
           Edificios de OpenStreetMap extruidos sobre el mapa base de OpenFreeMap, con las capas oficiales de GeoSampa
