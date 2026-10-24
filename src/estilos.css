@@ -1,46 +1,64 @@
+/*
+ * Sistema visual: la señalización del Metrô de São Paulo.
+ * - Fondo «concreto», recuadros planos (sin bordes ni sombras) y texto «asfalto».
+ * - La cabecera es una banda oscura de señalización, igual en los dos temas.
+ * - Color con significado: azul de la línea 1 como acento (P1) y amarillo de la línea 4 solo para P2.
+ * - Una familia, Archivo: ancha en títulos y condensada en rótulos, como la señalética.
+ */
+
 :root {
   color-scheme: light;
-  --fondo: #f6f5f2;
-  --superficie: #fcfcfb;
-  --superficie-2: #efeee9;
-  --borde: #dedcd5;
-  --grilla: #e6e4de;
-  --texto: #0b0b0b;
-  --texto-2: #52514e;
-  --texto-tenue: #7a7973;
-  --acento: #1c5cab;
+  --fondo: #e8e9e5;
+  --superficie: #f7f7f4;
+  --superficie-2: #dee0db;
+  --borde: #c9ccc6;
+  --grilla: #d7d9d3;
+  --texto: #1f2428;
+  --texto-2: #4a5157;
+  --texto-tenue: #5b6268;
+  --acento: #0455a1;
   --serie-1: #2a78d6;
-  --aviso-fondo: #fff4dc;
-  --aviso-borde: #eda100;
-  --aviso-texto: #5c4300;
+  --aviso-fondo: #fbefc9;
+  --aviso-borde: #c98a00;
+  --aviso-texto: #4f3a00;
   --bien: #0b7a0b;
-  --radio: 12px;
-  --sombra: 0 1px 2px rgb(0 0 0 / 0.04), 0 2px 12px rgb(0 0 0 / 0.05);
-  --sombra-flotante: 0 8px 24px rgb(0 0 0 / 0.14);
-  --fuente: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+
+  /* Fijos en los dos temas: la banda de señalización y los colores oficiales de línea. */
+  --senal: #1f2428;
+  --senal-2: #2c3338;
+  --senal-texto: #f2f3ef;
+  --senal-texto-2: #b9bec2;
+  --linea-1: #0455a1;
+  --linea-4: #fed304;
+
+  --radio: 6px;
+  --sombra-flotante: 0 8px 24px rgb(20 24 28 / 0.18);
+  --fuente: "Archivo Variable", "Archivo", system-ui, sans-serif;
 }
 
 /* El tema lo fija index.html en <html data-tema> antes de pintar; src/tema.ts lo mantiene. */
 :root[data-tema="oscuro"] {
   color-scheme: dark;
-  --fondo: #121211;
-  --superficie: #1c1c1a;
-  --superficie-2: #272725;
-  --borde: #3a3a35;
-  --grilla: #2c2c29;
-  --texto: #f0efec;
-  --texto-2: #c3c2b7;
-  --texto-tenue: #93928a;
-  --acento: #86b6ef;
+  --fondo: #15181b;
+  --superficie: #1f2327;
+  --superficie-2: #2a2f34;
+  --borde: #3b4148;
+  --grilla: #2e3338;
+  --texto: #e8e9e5;
+  --texto-2: #b9bec2;
+  --texto-tenue: #949aa0;
+  --acento: #7db3ee;
   --serie-1: #3987e5;
-  --aviso-fondo: #2e2610;
+  --aviso-fondo: #2e2810;
   --aviso-borde: #c98500;
   --aviso-texto: #f3d999;
   --bien: #4cc24c;
-  --sombra: 0 1px 2px rgb(0 0 0 / 0.4), 0 4px 16px rgb(0 0 0 / 0.25);
+  --senal: #0e1012;
+  --senal-2: #1f2327;
   --sombra-flotante: 0 8px 24px rgb(0 0 0 / 0.5);
 }
 
+/* --- Base --- */
 * {
   box-sizing: border-box;
 }
@@ -53,16 +71,25 @@ body {
   color: var(--texto);
   font-family: var(--fuente);
   font-size: 16px;
-  line-height: 1.5;
+  line-height: 1.55;
+  font-stretch: 100%;
 }
 a {
   color: var(--acento);
 }
+a,
+button {
+  touch-action: manipulation;
+}
 h1,
 h2,
 h3 {
-  line-height: 1.2;
   margin: 0;
+  line-height: 1.15;
+  text-wrap: balance;
+}
+p {
+  text-wrap: pretty;
 }
 button,
 select,
@@ -70,8 +97,33 @@ input {
   font: inherit;
   color: inherit;
 }
+:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
+}
 
-/* --- Cabecera --- */
+.saltar {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 30;
+  padding: 8px 14px;
+  border-radius: var(--radio);
+  border: 0;
+  background: var(--superficie);
+  color: var(--texto);
+  font-weight: 600;
+  cursor: pointer;
+  transform: translateY(-200%);
+}
+.saltar:focus-visible {
+  transform: none;
+}
+.contenido:focus {
+  outline: none; /* recibe el foco solo desde el enlace «Saltar al contenido» */
+}
+
+/* --- Cabecera: banda de señalización --- */
 .cabecera {
   position: sticky;
   top: 0;
@@ -79,73 +131,88 @@ input {
   display: flex;
   align-items: center;
   gap: 24px;
-  padding: 12px 24px;
-  background: color-mix(in srgb, var(--superficie) 92%, transparent);
-  backdrop-filter: blur(8px);
-  box-shadow: var(--sombra);
+  padding: 10px 24px;
+  background: var(--senal);
+  color: var(--senal-texto);
+  --acento: #7db3ee; /* foco visible sobre la banda oscura */
 }
 .marca {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   font-weight: 700;
-  color: var(--texto);
+  font-stretch: 112%;
+  letter-spacing: -0.01em;
+  color: var(--senal-texto);
   text-decoration: none;
   white-space: nowrap;
 }
+/* El punto de la marca es una estación: círculo blanco con anillo de la línea 1. */
 .marca-punto {
-  width: 10px;
-  height: 10px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
-  background: var(--serie-1);
+  background: var(--senal-texto);
+  box-shadow: 0 0 0 3px var(--linea-1);
 }
 .marca-sub {
   font-weight: 400;
-  color: var(--texto-2);
+  font-stretch: 100%;
+  color: var(--senal-texto-2);
 }
 .nav {
   display: flex;
-  gap: 4px;
+  gap: 2px;
   overflow-x: auto;
   scrollbar-width: none;
 }
-.boton-tema {
+.nav a {
+  padding: 6px 10px;
+  border-radius: var(--radio);
+  color: var(--senal-texto-2);
+  text-decoration: none;
+  font-size: 14px;
+  font-stretch: 92%;
+  white-space: nowrap;
+}
+.nav a:hover {
+  background: var(--senal-2);
+  color: var(--senal-texto);
+}
+/* La barra tiene desplazamiento horizontal y recortaría el contorno de foco: va hacia dentro. */
+.nav a:focus-visible {
+  outline-offset: -2px;
+}
+.nav a.activa {
+  background: var(--senal-2);
+  color: var(--senal-texto);
+  font-weight: 600;
+}
+.nav-pendiente {
+  margin-left: 2px;
+  opacity: 0.6;
+}
+.boton-tema,
+.boton-menu {
   display: grid;
   place-items: center;
   flex: none;
   width: 40px;
   height: 40px;
-  margin-left: auto;
+  padding: 0;
   border: 0;
-  border-radius: 8px;
+  border-radius: var(--radio);
   background: transparent;
-  color: var(--texto-2);
+  color: var(--senal-texto-2);
   cursor: pointer;
 }
-.boton-tema:hover {
-  background: var(--superficie-2);
-  color: var(--texto);
+.boton-tema {
+  margin-left: auto;
 }
-.nav a {
-  padding: 6px 10px;
-  border-radius: 8px;
-  color: var(--texto-2);
-  text-decoration: none;
-  font-size: 14px;
-  white-space: nowrap;
-}
-.nav a:hover {
-  background: var(--superficie-2);
-  color: var(--texto);
-}
-.nav a.activa {
-  background: var(--superficie-2);
-  color: var(--texto);
-  font-weight: 600;
-}
-.nav-pendiente {
-  color: var(--texto-tenue);
-  margin-left: 2px;
+.boton-tema:hover,
+.boton-menu:hover {
+  background: var(--senal-2);
+  color: var(--senal-texto);
 }
 .boton-menu {
   display: none;
@@ -155,7 +222,7 @@ input {
 .contenido {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 32px 24px 48px;
+  padding: 40px 24px 56px;
 }
 .seccion {
   display: flex;
@@ -167,32 +234,31 @@ input {
   max-width: 760px;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 .portada h1 {
-  font-size: clamp(2rem, 5vw, 3rem);
-  letter-spacing: -0.02em;
+  font-size: clamp(2.1rem, 5.2vw, 3.4rem);
+  font-weight: 750;
+  font-stretch: 115%;
+  letter-spacing: -0.025em;
+  line-height: 1.04;
 }
 .seccion-cabecera h1 {
-  font-size: clamp(1.6rem, 3.5vw, 2.2rem);
-  letter-spacing: -0.01em;
-}
-.antetitulo {
-  margin: 0;
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--acento);
+  font-size: clamp(1.7rem, 3.6vw, 2.4rem);
+  font-weight: 720;
+  font-stretch: 110%;
+  letter-spacing: -0.02em;
 }
 .entrada {
   margin: 0;
+  max-width: 68ch;
   color: var(--texto-2);
-  font-size: 1.05rem;
+  font-size: 1.08rem;
 }
 .subtitulo {
-  font-size: 1.15rem;
-  margin-top: 8px;
+  margin-top: 16px;
+  font-size: 1.25rem;
+  font-stretch: 110%;
 }
 .nota {
   margin: 0;
@@ -200,55 +266,94 @@ input {
   color: var(--texto-tenue);
 }
 
-/* --- Preguntas --- */
+/* Rótulo de pregunta con el círculo de línea (P1 azul, P2 amarillo). */
+.rotulo-pregunta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: 600;
+  font-stretch: 90%;
+  color: var(--texto-2);
+}
+.codigo-pregunta {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 2.2em;
+  height: 2.2em;
+  border-radius: 50%;
+  font-size: 15px;
+  font-weight: 750;
+  font-stretch: 85%;
+  letter-spacing: -0.02em;
+}
+.codigo-p1 {
+  background: var(--linea-1);
+  color: #ffffff;
+}
+.codigo-p2 {
+  background: var(--linea-4);
+  color: #1f2428;
+}
+
+/* --- Preguntas de la portada: placas de estación --- */
 .preguntas {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 16px;
 }
 .pregunta {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
+  gap: 18px;
   padding: 24px;
   border-radius: var(--radio);
   background: var(--superficie);
-  box-shadow: var(--sombra);
   color: var(--texto);
   text-decoration: none;
-  transition:
-    box-shadow 0.15s,
-    transform 0.15s;
+  transition: background-color 0.15s;
 }
 .pregunta:hover {
-  box-shadow: var(--sombra-flotante);
-  transform: translateY(-2px);
+  background: var(--superficie-2);
+}
+@media (prefers-reduced-motion: reduce) {
+  .pregunta {
+    transition: none;
+  }
+}
+.pregunta .codigo-pregunta {
+  font-size: 20px;
+}
+.pregunta-cuerpo {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 0;
 }
 .pregunta h2 {
   font-size: 1.2rem;
+  font-stretch: 105%;
 }
 .pregunta p {
   margin: 0;
   color: var(--texto-2);
 }
-.pregunta-codigo {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--acento);
-}
-.estado-listo {
+.pregunta-accion {
   margin-top: auto;
+  padding-top: 4px;
   font-size: 14px;
   font-weight: 600;
   color: var(--acento);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
 }
-.estado-pendiente {
-  margin-top: auto;
-  font-size: 14px;
-  color: var(--texto-tenue);
+.pregunta:hover .pregunta-accion {
+  text-decoration-thickness: 2px;
 }
 
-/* --- Tarjetas --- */
+/* --- Tarjetas de indicador --- */
 .rejilla-tarjetas {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -261,19 +366,22 @@ input {
   padding: 20px;
   border-radius: var(--radio);
   background: var(--superficie);
-  box-shadow: var(--sombra);
+  min-width: 0;
 }
 .tarjeta h3 {
   font-size: 14px;
   font-weight: 600;
+  font-stretch: 92%;
   color: var(--texto-2);
 }
 .cifra {
   margin: 0;
-  font-size: 2rem;
-  font-weight: 700;
+  font-size: 2.1rem;
+  font-weight: 720;
+  font-stretch: 108%;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
 .cifra-destacada {
   color: var(--acento);
@@ -281,6 +389,7 @@ input {
 .unidad {
   font-size: 1rem;
   font-weight: 400;
+  font-stretch: 100%;
   color: var(--texto-2);
   letter-spacing: 0;
 }
@@ -316,7 +425,7 @@ input {
   margin: 6px 0 0;
   padding: 8px 10px;
   font-size: 13px;
-  border-radius: 8px;
+  border-radius: var(--radio);
   background: var(--aviso-fondo);
   color: var(--aviso-texto);
 }
@@ -326,6 +435,7 @@ input {
   border-radius: 999px;
   font-size: 12px;
   font-weight: 600;
+  font-stretch: 92%;
   background: var(--superficie-2);
   color: var(--texto-2);
   white-space: nowrap;
@@ -365,12 +475,13 @@ input {
   padding: 20px;
   border-radius: var(--radio);
   background: var(--superficie);
-  box-shadow: var(--sombra);
   min-width: 0;
 }
 .panel h2 {
-  font-size: 1rem;
+  font-size: 1.05rem;
+  font-stretch: 105%;
 }
+/* Dentro de un panel, las tarjetas pequeñas usan el segundo tono para distinguirse. */
 .rejilla-mini {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -378,6 +489,7 @@ input {
 }
 .rejilla-mini .tarjeta {
   padding: 14px;
+  background: var(--superficie-2);
 }
 .rejilla-mini .cifra {
   font-size: 1.4rem;
@@ -402,21 +514,23 @@ input {
   flex-direction: column;
   gap: 4px;
   font-size: 13px;
+  font-stretch: 92%;
   color: var(--texto-2);
 }
 .filtros select,
 .filtros input {
   min-height: 40px;
   padding: 6px 10px;
-  border-radius: 8px;
+  border-radius: var(--radio);
   border: 1px solid var(--borde);
   background: var(--superficie);
+  color: var(--texto);
   font-size: 15px;
 }
 .boton-secundario {
   min-height: 40px;
   padding: 6px 14px;
-  border-radius: 8px;
+  border-radius: var(--radio);
   border: 1px solid var(--borde);
   background: var(--superficie);
   cursor: pointer;
@@ -448,12 +562,25 @@ input {
   flex-direction: column;
   gap: 8px;
 }
+.mapa-contenedor {
+  position: relative;
+}
 .mapa {
   width: 100%;
   height: 440px;
-  border-radius: 8px;
+  border-radius: var(--radio);
   overflow: hidden;
   background: var(--superficie-2);
+}
+.mapa-cargando {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  font-size: 14px;
+  color: var(--texto-tenue);
+  pointer-events: none;
 }
 .leyenda {
   display: flex;
@@ -485,24 +612,12 @@ input {
   height: 14px;
   border-radius: 3px;
 }
-.mapa-contenedor {
-  position: relative;
-}
-.mapa-cargando {
-  position: absolute;
-  inset: 0;
-  display: grid;
-  place-items: center;
-  margin: 0;
-  font-size: 14px;
-  color: var(--texto-tenue);
-  pointer-events: none;
-}
+
 .maplibregl-popup-content {
   font-family: var(--fuente);
   font-size: 13px;
   padding: 8px 10px;
-  border-radius: 8px;
+  border-radius: var(--radio);
   background: var(--superficie);
   color: var(--texto);
   box-shadow: var(--sombra-flotante);
@@ -545,17 +660,17 @@ input {
 }
 .mapa-3d {
   height: min(70vh, 640px);
-  border-radius: var(--radio);
 }
 .panel-capas {
   position: absolute;
   top: 12px;
   left: 12px;
   width: 240px;
-  padding: 14px;
-  border-radius: 10px;
   max-height: calc(100% - 24px);
   overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 14px;
+  border-radius: var(--radio);
   background: var(--superficie);
   font-size: 14px;
   box-shadow: var(--sombra-flotante);
@@ -616,9 +731,8 @@ input {
 
 /* --- Tablas --- */
 .tabla-scroll {
-  overflow-x: auto;
+  overflow: auto;
   max-height: 420px;
-  overflow-y: auto;
 }
 table {
   width: 100%;
@@ -638,6 +752,7 @@ th {
   background: var(--superficie);
   font-size: 12px;
   font-weight: 600;
+  font-stretch: 92%;
   color: var(--texto-2);
 }
 .num {
@@ -675,7 +790,6 @@ code {
   padding: 6px 12px;
   border-radius: 999px;
   background: var(--superficie);
-  box-shadow: var(--sombra);
   font-size: 14px;
 }
 .metodo {
@@ -704,7 +818,6 @@ code {
   padding: 20px;
   border-radius: var(--radio);
   background: var(--superficie);
-  box-shadow: var(--sombra);
 }
 .lista-vacios dt {
   font-weight: 600;
@@ -747,30 +860,22 @@ code {
   .cabecera {
     flex-wrap: wrap;
     gap: 8px;
-    padding: 10px 16px;
+    padding: 8px 16px;
   }
-  /* En móvil: marca, tema y menú en la primera fila; la navegación se despliega debajo. */
+  /* Marca, tema y menú en la primera fila; la navegación se despliega debajo. */
   .boton-tema {
     order: 1;
   }
   .boton-menu {
     order: 2;
     display: grid;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    padding: 0;
-    border: 0;
-    border-radius: 8px;
-    background: transparent;
-    color: var(--texto-2);
-    cursor: pointer;
   }
   .nav {
     order: 3;
     display: none;
     width: 100%;
     flex-direction: column;
+    padding-bottom: 8px;
   }
   .nav.abierta {
     display: flex;
@@ -779,7 +884,7 @@ code {
     padding: 10px 12px;
   }
   .contenido {
-    padding: 24px 16px 40px;
+    padding: 28px 16px 40px;
   }
   .pie {
     padding: 20px 16px;
@@ -790,10 +895,14 @@ code {
   .panel {
     padding: 16px;
   }
+  .pregunta {
+    padding: 20px;
+    gap: 14px;
+  }
   .panel-capas {
     position: static;
     width: auto;
     margin-top: 12px;
-    box-shadow: var(--sombra);
+    box-shadow: none;
   }
 }
