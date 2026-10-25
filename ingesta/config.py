@@ -36,7 +36,8 @@ CODIGO_IBGE_SP = "3550308"
 # Decisión por defecto de cada uno (el equipo debe confirmarla):
 #   tipo_parto            → no se publica; solo el total de nacidos_vivos.
 #   raza_color, empleos   → solo como porcentaje, con supresión bajo el umbral.
-#   nombre, ubicacion_texto, propiedad_terreno (F32) → no se publican.
+#   nombre (F32)          → sí se publica: excepción en PUBLICACION_AUTORIZADA.
+#   ubicacion_texto, propiedad_terreno (F32) → no se publican.
 #   indice_vulnerabilidad → no se publica hasta conocer su escala y definición.
 CAMPOS_SENSIBLES = {
     "F16": {"raza_color", "empleos"},
@@ -53,6 +54,13 @@ PUBLICACION_TRANSFORMADA = {
     ("F17", "empleos"): "porcentaje",
     ("F16", "raza_color"): "porcentaje",
     ("F17", "raza_color"): "porcentaje",
+}
+
+# Excepción por decisión del equipo: campos Sensibles que salen tal cual, con el motivo.
+# El Diccionario los sigue marcando como Sensibles; verificar.py los deja pasar solo a ellos.
+PUBLICACION_AUTORIZADA = {
+    ("F32", "nombre"): "Decisión del equipo (2026-10-25): el nombre de la favela ya es público en GeoSampa. "
+    "La calle (ubicacion_texto) y la propiedad del terreno siguen sin publicarse.",
 }
 
 # Celdas con menos casos que este umbral se suprimen (pendiente de confirmar).

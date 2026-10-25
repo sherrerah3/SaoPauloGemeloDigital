@@ -1,0 +1,394 @@
+anio,unidad_territorial,nivel,empleos_masculino,empleos_femenino
+2022,Alto de Pinheiros,distrito,11844,11764
+2022,Anhanguera,distrito,7120,3364
+2022,Aricanduva,distrito,9656,6815
+2022,Artur Alvim,distrito,3434,4160
+2022,Barra Funda,distrito,69422,59657
+2022,Bela Vista,distrito,85890,91615
+2022,Belém,distrito,15018,12016
+2022,Bom Retiro,distrito,87527,32317
+2022,Brasilândia,distrito,6209,5443
+2022,Brás,distrito,172307,247715
+2022,Butantã,distrito,43806,29656
+2022,Cachoeirinha,distrito,8267,6668
+2022,Cambuci,distrito,5562,3088
+2022,Campo Belo,distrito,28586,24671
+2022,Campo Grande,distrito,21394,16075
+2022,Campo Limpo,distrito,11653,8749
+2022,Cangaíba,distrito,5961,4643
+2022,Capão Redondo,distrito,10438,8967
+2022,Carrão,distrito,15783,13041
+2022,Casa Verde,distrito,17947,14507
+2022,Cidade Ademar,distrito,12722,9946
+2022,Cidade Dutra,distrito,15883,14812
+2022,Cidade Líder,distrito,11108,10557
+2022,Cidade Tiradentes,distrito,3545,4648
+2022,Consolação,distrito,60558,54116
+2022,Cursino,distrito,11818,8040
+2022,Ermelino Matarazzo,distrito,6382,4389
+2022,Freguesia do Ó,distrito,13057,8463
+2022,Grajaú,distrito,9732,7754
+2022,Guaianases,distrito,3772,5153
+2022,Iguatemi,distrito,5452,3745
+2022,Ipiranga,distrito,32929,28202
+2022,Itaim Bibi,distrito,225233,169883
+2022,Itaim Paulista,distrito,6093,4210
+2022,Itaquera,distrito,23061,20399
+2022,Jabaquara,distrito,45063,34239
+2022,Jaguara,distrito,16145,8845
+2022,Jaguaré,distrito,58261,31403
+2022,Jaraguá,distrito,14928,8142
+2022,Jardim Helena,distrito,4170,3524
+2022,Jardim Paulista,distrito,113316,121501
+2022,Jardim São Luís,distrito,20213,17610
+2022,Jardim Ângela,distrito,9351,9166
+2022,Jaçanã,distrito,8882,6822
+2022,José Bonifácio,distrito,16275,6807
+2022,Lajeado,distrito,3410,4577
+2022,Lapa,distrito,71514,67089
+2022,Liberdade,distrito,39542,56907
+2022,Limão,distrito,16355,9902
+2022,Mandaqui,distrito,8513,6483
+2022,Marsilac,distrito,345,500
+2022,Moema,distrito,92441,94541
+2022,Mooca,distrito,31386,34656
+2022,Morumbi,distrito,38276,37994
+2022,Parelheiros,distrito,4318,4343
+2022,Pari,distrito,11496,10135
+2022,Parque do Carmo,distrito,10764,11419
+2022,Pedreira,distrito,11188,5057
+2022,Penha,distrito,17443,14963
+2022,Perdizes,distrito,21978,19076
+2022,Perus,distrito,2931,2769
+2022,Pinheiros,distrito,73201,68730
+2022,Pirituba,distrito,11961,8690
+2022,Ponte Rasa,distrito,10714,11249
+2022,Raposo Tavares,distrito,8921,6181
+2022,República,distrito,59041,54137
+2022,Rio Pequeno,distrito,13218,10144
+2022,Sacomã,distrito,20746,15799
+2022,Santa Cecília,distrito,9209,12123
+2022,Santana,distrito,48290,42233
+2022,Santo Amaro,distrito,145588,122893
+2022,Sapopemba,distrito,11362,12936
+2022,Saúde,distrito,24945,20930
+2022,Socorro,distrito,21767,13236
+2022,São Domingos,distrito,20468,12607
+2022,São Lucas,distrito,14484,8137
+2022,São Mateus,distrito,14546,11351
+2022,São Miguel,distrito,7729,9491
+2022,São Rafael,distrito,3877,4910
+2022,Sé,distrito,128044,183358
+2022,Tatuapé,distrito,50433,59969
+2022,Tremembé,distrito,20652,12707
+2022,Tucuruvi,distrito,10124,9946
+2022,Vila Andrade,distrito,12465,11316
+2022,Vila Curuçá,distrito,5056,3573
+2022,Vila Formosa,distrito,12420,15449
+2022,Vila Guilherme,distrito,24482,14068
+2022,Vila Jacuí,distrito,7738,6409
+2022,Vila Leopoldina,distrito,52246,35191
+2022,Vila Maria,distrito,43041,23972
+2022,Vila Mariana,distrito,64249,68639
+2022,Vila Matilde,distrito,19784,14193
+2022,Vila Medeiros,distrito,8872,5825
+2022,Vila Prudente,distrito,21830,16059
+2022,Vila Sônia,distrito,19112,11673
+2022,Água Rasa,distrito,17366,12546
+2022,Inválidos,invalidos,9696,685
+2022,MSP,municipio,2826408,2564036
+2022,Não Localizados,no_localizados,11058,24963
+2022,Aricanduva/Formosa/Carrão,subprefeitura,37859,35305
+2022,Butantã,subprefeitura,123333,95648
+2022,Campo Limpo,subprefeitura,34556,29032
+2022,Capela do Socorro,subprefeitura,47382,35802
+2022,Casa Verde/Cachoeirinha,subprefeitura,42569,31077
+2022,Cidade Ademar,subprefeitura,23910,15003
+2022,Cidade Tiradentes,subprefeitura,3545,4648
+2022,Ermelino Matarazzo,subprefeitura,17096,15638
+2022,Freguesia/Brasilândia,subprefeitura,19266,13906
+2022,Guaianases,subprefeitura,7182,9730
+2022,Ipiranga,subprefeitura,65493,52041
+2022,Itaim Paulista,subprefeitura,11149,7783
+2022,Itaquera,subprefeitura,61208,49182
+2022,Jabaquara,subprefeitura,45063,34239
+2022,Jaçanã/Tremembé,subprefeitura,29534,19529
+2022,Lapa,subprefeitura,289566,221261
+2022,M'Boi Mirim,subprefeitura,29564,26776
+2022,Mooca,subprefeitura,298006,377037
+2022,Parelheiros,subprefeitura,4663,4843
+2022,Penha,subprefeitura,46622,37959
+2022,Perus,subprefeitura,10051,6133
+2022,Pinheiros,subprefeitura,423594,371878
+2022,Pirituba,subprefeitura,47357,29439
+2022,Santana/Tucuruvi,subprefeitura,66927,58662
+2022,Santo Amaro,subprefeitura,195568,163639
+2022,Sapopemba,subprefeitura,11362,12936
+2022,São Mateus,subprefeitura,23875,20006
+2022,São Miguel,subprefeitura,19637,19424
+2022,Sé,subprefeitura,475373,487661
+2022,Vila Maria/Vila Guilherme,subprefeitura,76395,43865
+2022,Vila Mariana,subprefeitura,181635,184110
+2022,Vila Prudente,subprefeitura,36314,24196
+2023,Alto de Pinheiros,distrito,12931,12888
+2023,Anhanguera,distrito,7485,3576
+2023,Aricanduva,distrito,9980,7078
+2023,Artur Alvim,distrito,3818,4567
+2023,Barra Funda,distrito,73020,60509
+2023,Bela Vista,distrito,93348,99892
+2023,Belém,distrito,15985,13084
+2023,Bom Retiro,distrito,21649,21542
+2023,Brasilândia,distrito,6349,5478
+2023,Brás,distrito,40662,35721
+2023,Butantã,distrito,44787,29262
+2023,Cachoeirinha,distrito,9315,8777
+2023,Cambuci,distrito,5492,2992
+2023,Campo Belo,distrito,31041,29534
+2023,Campo Grande,distrito,21084,16499
+2023,Campo Limpo,distrito,11819,9275
+2023,Cangaíba,distrito,5978,4717
+2023,Capão Redondo,distrito,11253,10004
+2023,Carrão,distrito,16028,12698
+2023,Casa Verde,distrito,21541,19166
+2023,Cidade Ademar,distrito,12418,10592
+2023,Cidade Dutra,distrito,19318,23383
+2023,Cidade Líder,distrito,11413,11079
+2023,Cidade Tiradentes,distrito,3765,4829
+2023,Consolação,distrito,62840,56837
+2023,Cursino,distrito,12539,8863
+2023,Ermelino Matarazzo,distrito,6790,4575
+2023,Freguesia do Ó,distrito,13548,9332
+2023,Grajaú,distrito,10154,7992
+2023,Guaianases,distrito,4143,5566
+2023,Iguatemi,distrito,6000,3818
+2023,Ipiranga,distrito,33701,29431
+2023,Itaim Bibi,distrito,228801,179903
+2023,Itaim Paulista,distrito,6417,4426
+2023,Itaquera,distrito,22724,19729
+2023,Jabaquara,distrito,45213,34291
+2023,Jaguara,distrito,15585,9404
+2023,Jaguaré,distrito,61267,33722
+2023,Jaraguá,distrito,16556,9605
+2023,Jardim Helena,distrito,4423,3497
+2023,Jardim Paulista,distrito,116285,124484
+2023,Jardim São Luís,distrito,20104,17335
+2023,Jardim Ângela,distrito,8908,9178
+2023,Jaçanã,distrito,8388,6574
+2023,José Bonifácio,distrito,16084,6903
+2023,Lajeado,distrito,3440,4681
+2023,Lapa,distrito,75325,77291
+2023,Liberdade,distrito,38138,55420
+2023,Limão,distrito,16909,10327
+2023,Mandaqui,distrito,8990,6672
+2023,Marsilac,distrito,352,520
+2023,Moema,distrito,87816,90288
+2023,Mooca,distrito,33554,36891
+2023,Morumbi,distrito,41772,42990
+2023,Parelheiros,distrito,4641,4497
+2023,Pari,distrito,73991,20492
+2023,Parque do Carmo,distrito,12481,16334
+2023,Pedreira,distrito,11885,5373
+2023,Penha,distrito,18759,15530
+2023,Perdizes,distrito,23278,23988
+2023,Perus,distrito,3232,3217
+2023,Pinheiros,distrito,73225,70387
+2023,Pirituba,distrito,12475,9026
+2023,Ponte Rasa,distrito,12838,17422
+2023,Raposo Tavares,distrito,9580,7048
+2023,República,distrito,44703,41964
+2023,Rio Pequeno,distrito,13134,10189
+2023,Sacomã,distrito,20992,16874
+2023,Santa Cecília,distrito,8306,9252
+2023,Santana,distrito,45998,45237
+2023,Santo Amaro,distrito,150625,128073
+2023,Sapopemba,distrito,12145,13672
+2023,Saúde,distrito,27326,25524
+2023,Socorro,distrito,22717,14075
+2023,São Domingos,distrito,18797,11840
+2023,São Lucas,distrito,15119,8896
+2023,São Mateus,distrito,14530,12459
+2023,São Miguel,distrito,10234,16206
+2023,São Rafael,distrito,4059,5253
+2023,Sé,distrito,114293,121302
+2023,Tatuapé,distrito,52950,61727
+2023,Tremembé,distrito,21036,13903
+2023,Tucuruvi,distrito,11791,14569
+2023,Vila Andrade,distrito,13464,11809
+2023,Vila Curuçá,distrito,4822,3831
+2023,Vila Formosa,distrito,13236,16381
+2023,Vila Guilherme,distrito,27967,14955
+2023,Vila Jacuí,distrito,7717,6447
+2023,Vila Leopoldina,distrito,57907,37995
+2023,Vila Maria,distrito,44653,24658
+2023,Vila Mariana,distrito,64189,71964
+2023,Vila Matilde,distrito,21222,14918
+2023,Vila Medeiros,distrito,8995,5968
+2023,Vila Prudente,distrito,21224,15432
+2023,Vila Sônia,distrito,20911,12665
+2023,Água Rasa,distrito,18298,13271
+2023,Inválidos,invalidos,22122,7415
+2023,MSP,municipio,2749177,2389803
+2023,Não Localizados,no_localizados,65,78
+2023,Aricanduva/Formosa/Carrão,subprefeitura,39244,36157
+2023,Butantã,subprefeitura,130184,102154
+2023,Campo Limpo,subprefeitura,36536,31088
+2023,Capela do Socorro,subprefeitura,52189,45450
+2023,Casa Verde/Cachoeirinha,subprefeitura,47765,38270
+2023,Cidade Ademar,subprefeitura,24303,15965
+2023,Cidade Tiradentes,subprefeitura,3765,4829
+2023,Ermelino Matarazzo,subprefeitura,19628,21997
+2023,Freguesia/Brasilândia,subprefeitura,19897,14810
+2023,Guaianases,subprefeitura,7583,10247
+2023,Ipiranga,subprefeitura,67232,55168
+2023,Itaim Paulista,subprefeitura,11239,8257
+2023,Itaquera,subprefeitura,62702,54045
+2023,Jabaquara,subprefeitura,45213,34291
+2023,Jaçanã/Tremembé,subprefeitura,29424,20477
+2023,Lapa,subprefeitura,306382,242909
+2023,M'Boi Mirim,subprefeitura,29012,26513
+2023,Mooca,subprefeitura,235440,181186
+2023,Parelheiros,subprefeitura,4993,5017
+2023,Penha,subprefeitura,49777,39732
+2023,Perus,subprefeitura,10717,6793
+2023,Pinheiros,subprefeitura,431242,387662
+2023,Pirituba,subprefeitura,47828,30471
+2023,Santana/Tucuruvi,subprefeitura,66779,66478
+2023,Santo Amaro,subprefeitura,202750,174106
+2023,Sapopemba,subprefeitura,12145,13672
+2023,São Mateus,subprefeitura,24589,21530
+2023,São Miguel,subprefeitura,22374,26150
+2023,Sé,subprefeitura,388769,409201
+2023,Vila Maria/Vila Guilherme,subprefeitura,81615,45581
+2023,Vila Mariana,subprefeitura,179331,187776
+2023,Vila Prudente,subprefeitura,36343,24328
+2024,Alto de Pinheiros,distrito,15277,14915
+2024,Anhanguera,distrito,8467,4122
+2024,Aricanduva,distrito,10294,7371
+2024,Artur Alvim,distrito,3612,4047
+2024,Barra Funda,distrito,59004,57937
+2024,Bela Vista,distrito,46706,54895
+2024,Belém,distrito,24280,20648
+2024,Bom Retiro,distrito,33780,28731
+2024,Brasilândia,distrito,7411,6152
+2024,Brás,distrito,19486,17247
+2024,Butantã,distrito,43128,29814
+2024,Cachoeirinha,distrito,9651,8611
+2024,Cambuci,distrito,23169,24912
+2024,Campo Belo,distrito,37633,36604
+2024,Campo Grande,distrito,24541,18671
+2024,Campo Limpo,distrito,11574,9197
+2024,Cangaíba,distrito,5593,4400
+2024,Capão Redondo,distrito,13523,14308
+2024,Carrão,distrito,15570,12694
+2024,Casa Verde,distrito,21599,19208
+2024,Cidade Ademar,distrito,12437,10372
+2024,Cidade Dutra,distrito,21422,25285
+2024,Cidade Líder,distrito,12621,9925
+2024,Cidade Tiradentes,distrito,3832,4977
+2024,Consolação,distrito,89404,92586
+2024,Cursino,distrito,14851,9977
+2024,Ermelino Matarazzo,distrito,7342,4635
+2024,Freguesia do Ó,distrito,13793,9592
+2024,Grajaú,distrito,11257,8530
+2024,Guaianases,distrito,3903,5457
+2024,Iguatemi,distrito,8540,4894
+2024,Ipiranga,distrito,34632,28769
+2024,Itaim Bibi,distrito,279006,233191
+2024,Itaim Paulista,distrito,13762,8054
+2024,Itaquera,distrito,17869,12382
+2024,Jabaquara,distrito,45908,34504
+2024,Jaguara,distrito,17700,9608
+2024,Jaguaré,distrito,49500,30405
+2024,Jaraguá,distrito,15833,9215
+2024,Jardim Helena,distrito,4397,3475
+2024,Jardim Paulista,distrito,101741,110165
+2024,Jardim São Luís,distrito,23729,19593
+2024,Jardim Ângela,distrito,9445,9125
+2024,Jaçanã,distrito,8778,6725
+2024,José Bonifácio,distrito,17270,8497
+2024,Lajeado,distrito,3534,4208
+2024,Lapa,distrito,89459,85815
+2024,Liberdade,distrito,20418,25329
+2024,Limão,distrito,12782,6957
+2024,Mandaqui,distrito,9321,6548
+2024,Marsilac,distrito,346,523
+2024,Moema,distrito,49383,56118
+2024,Mooca,distrito,33639,38338
+2024,Morumbi,distrito,30281,36428
+2024,Parelheiros,distrito,6088,5794
+2024,Pari,distrito,92665,29330
+2024,Parque do Carmo,distrito,16103,24059
+2024,Pedreira,distrito,12714,5624
+2024,Penha,distrito,17821,15768
+2024,Perdizes,distrito,25792,25892
+2024,Perus,distrito,3431,4230
+2024,Pinheiros,distrito,75850,68710
+2024,Pirituba,distrito,12717,9908
+2024,Ponte Rasa,distrito,7454,5426
+2024,Raposo Tavares,distrito,11212,7425
+2024,República,distrito,64981,66589
+2024,Rio Pequeno,distrito,14970,16662
+2024,Sacomã,distrito,18950,13985
+2024,Santa Cecília,distrito,40793,30054
+2024,Santana,distrito,44709,40369
+2024,Santo Amaro,distrito,147175,133124
+2024,Sapopemba,distrito,11478,13995
+2024,Saúde,distrito,31069,32745
+2024,Socorro,distrito,26771,16908
+2024,São Domingos,distrito,17100,11999
+2024,São Lucas,distrito,15507,9092
+2024,São Mateus,distrito,13637,13047
+2024,São Miguel,distrito,11275,18393
+2024,São Rafael,distrito,4981,6587
+2024,Sé,distrito,119443,189450
+2024,Tatuapé,distrito,59983,72786
+2024,Tremembé,distrito,19770,12739
+2024,Tucuruvi,distrito,12027,15245
+2024,Vila Andrade,distrito,16193,15078
+2024,Vila Curuçá,distrito,8104,6843
+2024,Vila Formosa,distrito,15468,18070
+2024,Vila Guilherme,distrito,29683,16235
+2024,Vila Jacuí,distrito,6814,5738
+2024,Vila Leopoldina,distrito,46850,36595
+2024,Vila Maria,distrito,44462,25554
+2024,Vila Mariana,distrito,50011,61171
+2024,Vila Matilde,distrito,27305,25816
+2024,Vila Medeiros,distrito,9107,5897
+2024,Vila Prudente,distrito,21295,15112
+2024,Vila Sônia,distrito,24103,16044
+2024,Água Rasa,distrito,14023,11302
+2024,Inválidos,invalidos,8578,4675
+2024,MSP,municipio,2801358,2545159
+2024,Não Localizados,no_localizados,463,408
+2024,Aricanduva/Formosa/Carrão,subprefeitura,41332,38135
+2024,Butantã,subprefeitura,123694,106373
+2024,Campo Limpo,subprefeitura,41290,38583
+2024,Capela do Socorro,subprefeitura,59450,50723
+2024,Casa Verde/Cachoeirinha,subprefeitura,44032,34776
+2024,Cidade Ademar,subprefeitura,25151,15996
+2024,Cidade Tiradentes,subprefeitura,3832,4977
+2024,Ermelino Matarazzo,subprefeitura,14796,10061
+2024,Freguesia/Brasilândia,subprefeitura,21204,15744
+2024,Guaianases,subprefeitura,7437,9665
+2024,Ipiranga,subprefeitura,68433,52731
+2024,Itaim Paulista,subprefeitura,21866,14897
+2024,Itaquera,subprefeitura,63863,54863
+2024,Jabaquara,subprefeitura,45908,34504
+2024,Jaçanã/Tremembé,subprefeitura,28548,19464
+2024,Lapa,subprefeitura,288305,246252
+2024,M'Boi Mirim,subprefeitura,33174,28718
+2024,Mooca,subprefeitura,244076,189651
+2024,Parelheiros,subprefeitura,6434,6317
+2024,Penha,subprefeitura,54331,50031
+2024,Perus,subprefeitura,11898,8352
+2024,Pinheiros,subprefeitura,471874,426981
+2024,Pirituba,subprefeitura,45650,31122
+2024,Santana/Tucuruvi,subprefeitura,66057,62162
+2024,Santo Amaro,subprefeitura,209349,188399
+2024,Sapopemba,subprefeitura,11478,13995
+2024,São Mateus,subprefeitura,27158,24528
+2024,São Miguel,subprefeitura,22486,27606
+2024,Sé,subprefeitura,438694,512546
+2024,Vila Maria/Vila Guilherme,subprefeitura,83252,47686
+2024,Vila Mariana,subprefeitura,130463,150034
+2024,Vila Prudente,subprefeitura,36802,24204

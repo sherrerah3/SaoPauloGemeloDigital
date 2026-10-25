@@ -172,6 +172,7 @@ ALIAS_SUBPREFEITURA = {
     "casa verde cachoeirinha": "casa verde limao cachoeirinha",
     "perus": "perus anhanguera",
     "pirituba": "pirituba jaragua",
+    "sao miguel paulista": "sao miguel",
 }
 
 

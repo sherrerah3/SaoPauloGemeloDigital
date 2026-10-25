@@ -13,6 +13,9 @@ data/derivados/red_bus.gpkg
 # Lago: se regeneran con `npm run datos`. densidad_sectores trae indice_vulnerabilidad (Sensible)
 # y el repo es público; buses pesa más de 50 MB.
 data/lago/geo/densidad_sectores.geojson
+# Favelas trae nombre, ubicación y propiedad del terreno; raza o color es Sensible (F16-F17).
+data/lago/geo/favelas.geojson
+data/lago/empleo_raza.csv
 data/lago/geo/buses.geojson
 # Configuración local de Claude Code (las skills viven en ~/.claude/skills, no en el repo)
 .claude/

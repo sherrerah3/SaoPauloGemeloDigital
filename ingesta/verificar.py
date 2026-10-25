@@ -22,6 +22,7 @@ from config import (
     LAGO_GEO,
     MAX_MB_ARCHIVO_PUBLICO,
     PUBLIC_DATA,
+    PUBLICACION_AUTORIZADA,
     PUBLICACION_TRANSFORMADA,
 )
 
@@ -35,9 +36,20 @@ ARCHIVOS_LAGO = {
     "geo/metro.geojson": ["F35"],
     "geo/estaciones.geojson": ["F36"],
     "geo/densidad_sectores.geojson": ["F41"],
+    "empleo_sexo.csv": ["F13", "F14", "F15"],
+    "empleo_raza.csv": ["F16", "F17"],
+    "ferias_mercados.csv": ["F21"],
+    "shoppings.csv": ["F22", "F23", "F24"],
+    "cobertura_vegetal.csv": ["F25", "F26", "F27"],
+    "area_construida_residencial.csv": ["F28"],
+    "geo/favelas.geojson": ["F32"],
+    "geo/centros_deportivos.geojson": ["F33"],
+    "geo/estadios.geojson": ["F34"],
+    "geo/escuelas_infantil.geojson": ["F39"],
+    "geo/escuelas_basica.geojson": ["F40"],
 }
 CAMPOS_CONTRATO = {"id", "campo_lago", "valor", "unidad", "nivel", "fuente_id", "vigencia", "tipo", "advertencia"}
-ADVERTENCIA_OBLIGATORIA = {"F05", "F06", "F08", "F11", "F12", "F25", "F26", "F27"}
+ADVERTENCIA_OBLIGATORIA = {"F05", "F06", "F08", "F11", "F12", "F16", "F17", "F25", "F26", "F27"}
 
 fallas: list[str] = []
 avisos: list[str] = []
@@ -117,6 +129,47 @@ def verificar_empleo():
         prueba(
             f"{campo}: subprefeituras = suma de sus distritos", (t["subprefeitura"] - t["distrito"]).abs().max() == 0
         )
+
+
+def verificar_composicion_empleo():
+    print("Empleo por sexo y raza (F13-F17)")
+    base = pd.read_csv(LAGO / "establecimientos_empleos.csv")
+    claves = ["anio", "unidad_territorial", "nivel"]
+    sexo = pd.read_csv(LAGO / "empleo_sexo.csv")
+    raza = pd.read_csv(LAGO / "empleo_raza.csv").groupby(claves, as_index=False)["empleos"].sum()
+    for nombre, df, columnas in (
+        ("sexo", sexo, ["empleos_masculino", "empleos_femenino"]),
+        ("raza", raza, ["empleos"]),
+    ):
+        unido = df.merge(base, on=claves, how="left")
+        diferencia = (unido[columnas].sum(axis=1) - unido["empleos_formales"]).abs()
+        # Sexo deja fuera la columna «Inválido» (casi siempre 0): se tolera una diferencia mínima.
+        prueba(
+            f"{nombre}: la suma de categorías = empleos_formales (F12) en ≥ 99 % de las filas",
+            (diferencia <= 0.001 * unido["empleos_formales"]).mean() >= 0.99,
+        )
+
+
+def verificar_equipamientos():
+    print("Equipamientos (F21, F22, F33, F34, F39, F40) y favelas (F32)")
+    ferias = pd.read_csv(LAGO / "ferias_mercados.csv")
+    t = ferias.pivot_table(index=["anio", "tipo_equipamiento"], columns="nivel", values="cantidad", aggfunc="sum")
+    # La fuente no cuadra en algunos años viejos; el año que se publica (el último) sí debe cuadrar.
+    cuadra = t.nunique(axis=1) == 1
+    ultimo = ferias["anio"].max()
+    prueba(f"F21 {ultimo}: distritos = subprefeituras = municipio en cada tipo", cuadra.loc[ultimo].all())
+    descuadrados = sorted({anio for anio, _ in cuadra[~cuadra].index})
+    if descuadrados:
+        avisos.append(f"F21: en {', '.join(map(str, descuadrados))} los distritos no suman el total de la fuente")
+    eq = pd.read_csv(DATA / "derivados" / "equipamientos_distrito.csv", dtype={"codigo_distrito": str})
+    total = eq.set_index("codigo_distrito").loc["MSP"]
+    for capa, columna in (("escuelas_infantil", "escuelas_infantil"), ("escuelas_basica", "escuelas_basica")):
+        en_capa = pyogrio.read_info(LAGO_GEO / f"{capa}.geojson")["features"]
+        if en_capa != total[columna]:
+            avisos.append(f"{en_capa - total[columna]:.0f} puntos de {capa} caen fuera de los 96 distritos")
+    fav = pd.read_csv(DATA / "derivados" / "favelas_distrito.csv", dtype={"codigo_distrito": str})
+    pct = fav.loc[fav.codigo_distrito != "MSP", "domicilios_favela_pct"]
+    prueba("F32: domicilios en favela entre 0 y 100 % del distrito", ((pct >= 0) & (pct <= 100)).all())
 
 
 def verificar_poblacion():
@@ -211,7 +264,8 @@ def verificar_publico():
             if fuente:
                 usadas.add(fuente)
             claves = set().union(*(f["properties"].keys() for f in datos["features"])) if datos["features"] else set()
-            if fuente and claves & CAMPOS_SENSIBLES.get(fuente, set()):
+            autorizados = {campo for f, campo in PUBLICACION_AUTORIZADA if f == fuente}
+            if fuente and claves & (CAMPOS_SENSIBLES.get(fuente, set()) - autorizados):
                 sensibles_publicados.append(rel)
 
     prueba("ningún archivo supera el límite", not grandes, ", ".join(grandes))
@@ -234,8 +288,10 @@ def main():
     verificar_lago()
     verificar_territorio()
     verificar_empleo()
+    verificar_composicion_empleo()
     verificar_poblacion()
     verificar_transporte()
+    verificar_equipamientos()
     verificar_publico()
     for a in avisos:
         print(f"  aviso {a}")

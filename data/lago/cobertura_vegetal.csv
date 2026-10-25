@@ -1,0 +1,100 @@
+anio,unidad_territorial,nivel,cobertura_vegetal_m2,poblacion,metodo_cobertura
+2010,MSP,municipio,615565696.84,11271503.0,spot_2010
+2010,Aricanduva/Formosa/Carrão,subprefeitura,1730261.0599999998,267702.0,spot_2010
+2010,Butantã,subprefeitura,20712126.509999998,428217.0,spot_2010
+2010,Campo Limpo,subprefeitura,6890365.23,607105.0,spot_2010
+2010,Capela do Socorro,subprefeitura,57373746.57,594930.0,spot_2010
+2010,Casa Verde/Cachoeirinha,subprefeitura,2671983.6,309376.0,spot_2010
+2010,Cidade Ademar,subprefeitura,7338370.05,410998.0,spot_2010
+2010,Cidade Tiradentes,subprefeitura,4761116.53,211501.0,spot_2010
+2010,Ermelino Matarazzo,subprefeitura,1807343.73,207509.0,spot_2010
+2010,Freguesia/Brasilândia,subprefeitura,2664622.7600000002,407245.0,spot_2010
+2010,Guaianases,subprefeitura,3332289.49,268508.0,spot_2010
+2010,Ipiranga,subprefeitura,6985353.68,463804.0,spot_2010
+2010,Itaim Paulista,subprefeitura,2059239.72,373127.0,spot_2010
+2010,Itaquera,subprefeitura,21556503.560000002,523848.0,spot_2010
+2010,Jabaquara,subprefeitura,636040.88,223780.0,spot_2010
+2010,Jaçanã/Tremembé,subprefeitura,15579409.899999999,291867.0,spot_2010
+2010,Lapa,subprefeitura,5477724.66,305526.0,spot_2010
+2010,M'Boi Mirim,subprefeitura,21844162.75,563305.0,spot_2010
+2010,Mooca,subprefeitura,1354539.1800000002,343980.0,spot_2010
+2010,Parelheiros,subprefeitura,305581719.8,139441.0,spot_2010
+2010,Penha,subprefeitura,7962143.54,474659.0,spot_2010
+2010,Perus,subprefeitura,42283854.61,164046.0,spot_2010
+2010,Pinheiros,subprefeitura,6122439.1899999995,289743.0,spot_2010
+2010,Pirituba,subprefeitura,22835948.04,437592.0,spot_2010
+2010,Santana/Tucuruvi,subprefeitura,6682931.380000001,324815.0,spot_2010
+2010,Santo Amaro,subprefeitura,8152411.470000001,238025.0,spot_2010
+2010,Sapopemba,subprefeitura,701586.1699999999,284524.0,spot_2010
+2010,São Mateus,subprefeitura,19047048.830000002,426794.0,spot_2010
+2010,São Miguel,subprefeitura,3234611.87,369496.0,spot_2010
+2010,Sé,subprefeitura,1903205.93,431106.0,spot_2010
+2010,Vila Maria/Vila Guilherme,subprefeitura,1515676.52,297713.0,spot_2010
+2010,Vila Mariana,subprefeitura,3445489.45,344632.0,spot_2010
+2010,Vila Prudente,subprefeitura,1321430.18,246589.0,spot_2010
+2015,MSP,municipio,676286882.0586909,11504119.599999998,rapideye_2015
+2015,Aricanduva/Formosa/Carrão,subprefeitura,2007417.3438928742,263256.44180711673,rapideye_2015
+2015,Butantã,subprefeitura,18542169.999919794,448719.1428197297,rapideye_2015
+2015,Campo Limpo,subprefeitura,6884188.288196156,659910.9502903717,rapideye_2015
+2015,Capela do Socorro,subprefeitura,60671680.68304663,599683.1516189636,rapideye_2015
+2015,Casa Verde/Cachoeirinha,subprefeitura,7380633.212841732,301621.34433507954,rapideye_2015
+2015,Cidade Ademar,subprefeitura,7232450.570545164,424500.96360022586,rapideye_2015
+2015,Cidade Tiradentes,subprefeitura,5150983.362525586,218518.9413391876,rapideye_2015
+2015,Ermelino Matarazzo,subprefeitura,2270085.714125567,205034.29320819583,rapideye_2015
+2015,Freguesia/Brasilândia,subprefeitura,11997656.747500781,407313.15632604924,rapideye_2015
+2015,Guaianases,subprefeitura,2844715.0385368606,269586.31195510353,rapideye_2015
+2015,Ipiranga,subprefeitura,7622552.281433622,472941.86908743856,rapideye_2015
+2015,Itaim Paulista,subprefeitura,1406332.3187434021,373079.40068455995,rapideye_2015
+2015,Itaquera,subprefeitura,20215639.895225864,532102.9082626293,rapideye_2015
+2015,Jabaquara,subprefeitura,1685518.4773746952,224427.18883508176,rapideye_2015
+2015,Jaçanã/Tremembé,subprefeitura,44416281.85842363,306554.2210360267,rapideye_2015
+2015,Lapa,subprefeitura,5422367.259425406,319820.99730156484,rapideye_2015
+2015,M'Boi Mirim,subprefeitura,20830156.73344126,595811.3544570799,rapideye_2015
+2015,Mooca,subprefeitura,2516272.60371136,357211.4416011672,rapideye_2015
+2015,Parelheiros,subprefeitura,314750569.72072333,153371.82514037445,rapideye_2015
+2015,Penha,subprefeitura,7834297.968890438,465189.01178886637,rapideye_2015
+2015,Perus,subprefeitura,41649697.258317694,168354.20305902488,rapideye_2015
+2015,Pinheiros,subprefeitura,6860109.655087182,293347.3891086688,rapideye_2015
+2015,Pirituba,subprefeitura,23206364.76177833,456105.47222339734,rapideye_2015
+2015,Santana/Tucuruvi,subprefeitura,12172045.806742767,317665.2676807232,rapideye_2015
+2015,Santo Amaro,subprefeitura,8049517.455100718,244105.58995179055,rapideye_2015
+2015,Sapopemba,subprefeitura,1049876.6216861722,280231.3208286616,rapideye_2015
+2015,São Mateus,subprefeitura,16988211.02150111,444125.4073583741,rapideye_2015
+2015,São Miguel,subprefeitura,3632916.8254337916,358222.3252772044,rapideye_2015
+2015,Sé,subprefeitura,3029277.110655409,454717.1694195865,rapideye_2015
+2015,Vila Maria/Vila Guilherme,subprefeitura,4368230.258169218,289203.153689451,rapideye_2015
+2015,Vila Mariana,subprefeitura,2012710.5045452884,354928.6948535525,rapideye_2015
+2015,Vila Prudente,subprefeitura,1585954.7011488634,244458.6910547497,rapideye_2015
+2020,PMSP,municipio,735994340.7337528,11869660.0,fotointerpretacion_aerea_2017_2018
+2020,Aricanduva/Formosa/Carrão,subprefeitura,2705104.784040007,264893.0,fotointerpretacion_aerea_2017_2018
+2020,Butantã,subprefeitura,21638694.83812994,459557.0,fotointerpretacion_aerea_2017_2018
+2020,Campo Limpo,subprefeitura,9687242.400060002,688779.0,fotointerpretacion_aerea_2017_2018
+2020,Capela do Socorro,subprefeitura,62491100.806240015,629260.0,fotointerpretacion_aerea_2017_2018
+2020,Casa Verde/Cachoeirinha,subprefeitura,8407980.20619001,312048.0,fotointerpretacion_aerea_2017_2018
+2020,Cidade Ademar,subprefeitura,7538048.356209991,446653.0,fotointerpretacion_aerea_2017_2018
+2020,Cidade Tiradentes,subprefeitura,6445703.638639996,235630.0,fotointerpretacion_aerea_2017_2018
+2020,Ermelino Matarazzo,subprefeitura,2866340.830909999,208489.0,fotointerpretacion_aerea_2017_2018
+2020,Freguesia/Brasilândia,subprefeitura,12949604.76145,422060.0,fotointerpretacion_aerea_2017_2018
+2020,Guaianases,subprefeitura,4012155.268050001,284269.0,fotointerpretacion_aerea_2017_2018
+2020,Ipiranga,subprefeitura,9357406.517949965,489571.0,fotointerpretacion_aerea_2017_2018
+2020,Itaim Paulista,subprefeitura,2553751.274809998,388412.0,fotointerpretacion_aerea_2017_2018
+2020,Itaquera,subprefeitura,21697777.051579997,555111.0,fotointerpretacion_aerea_2017_2018
+2020,Jabaquara,subprefeitura,2183817.7549500014,229346.0,fotointerpretacion_aerea_2017_2018
+2020,Jaçanã/Tremembé,subprefeitura,44730029.95652988,319607.0,fotointerpretacion_aerea_2017_2018
+2020,Lapa,subprefeitura,8469952.943810014,322307.0,fotointerpretacion_aerea_2017_2018
+2020,M'Boi Mirim,subprefeitura,21960183.352760036,631925.0,fotointerpretacion_aerea_2017_2018
+2020,Mooca,subprefeitura,4349910.900530015,360266.0,fotointerpretacion_aerea_2017_2018
+2020,Parelheiros,subprefeitura,329860759.7803326,162024.0,fotointerpretacion_aerea_2017_2018
+2020,Penha,subprefeitura,9800407.507760026,473244.0,fotointerpretacion_aerea_2017_2018
+2020,Perus,subprefeitura,43312873.63351018,174029.0,fotointerpretacion_aerea_2017_2018
+2020,Pinheiros,subprefeitura,9072405.959920028,294819.0,fotointerpretacion_aerea_2017_2018
+2020,Pirituba,subprefeitura,26047702.137330055,470454.0,fotointerpretacion_aerea_2017_2018
+2020,Santana/Tucuruvi,subprefeitura,12992676.32604002,318839.0,fotointerpretacion_aerea_2017_2018
+2020,Santo Amaro,subprefeitura,11087650.446689947,244913.0,fotointerpretacion_aerea_2017_2018
+2020,Sapopemba,subprefeitura,1442538.8750100017,289759.0,fotointerpretacion_aerea_2017_2018
+2020,São Mateus,subprefeitura,17280144.04524993,464809.0,fotointerpretacion_aerea_2017_2018
+2020,São Miguel,subprefeitura,4925750.379339995,370614.0,fotointerpretacion_aerea_2017_2018
+2020,Sé,subprefeitura,4393435.2816499965,460024.0,fotointerpretacion_aerea_2017_2018
+2020,Vila Maria/Vila Guilherme,subprefeitura,3154058.2992000016,294560.0,fotointerpretacion_aerea_2017_2018
+2020,Vila Mariana,subprefeitura,6123952.627200004,355755.0,fotointerpretacion_aerea_2017_2018
+2020,Vila Prudente,subprefeitura,2455179.79168,247634.0,fotointerpretacion_aerea_2017_2018

@@ -15,6 +15,7 @@ import geopandas as gpd
 import pandas as pd
 import shapely
 
+import calculos_equipamientos
 import calculos_p1
 from comun import cargar_equivalencias, unir_distritos, unir_subprefeituras
 from config import (
@@ -26,9 +27,11 @@ from config import (
     LAGO,
     LAGO_GEO,
     PUBLIC_DATA,
+    PUBLICACION_AUTORIZADA,
     PUBLICACION_TRANSFORMADA,
     RADIO_COBERTURA_M,
     RAW,
+    UMBRAL_SUPRESION,
 )
 
 TIPOS = {"observado", "estimado", "proxy", "declarado"}
@@ -43,6 +46,11 @@ ADVERTENCIAS = {
     "La serie RAIS tiene un quiebre desde 2022 por cambios en la captación.",
     "F05": "Solo buses municipales de SPTrans (no metro ni tren). Se suman los reportes diarios; "
     "un mes al que le falta algún día se completa con el consolidado mensual de SPTrans.",
+    "F13": "La serie RAIS tiene un quiebre desde 2022 por cambios en la captación.",
+    "F14": "La serie RAIS tiene un quiebre desde 2022 por cambios en la captación.",
+    "F15": "La serie RAIS tiene un quiebre desde 2022 por cambios en la captación.",
+    "F16": "Porcentaje sobre todos los empleos, incluidos los que no tienen raza o color registrada.",
+    "F17": "Porcentaje sobre todos los empleos, incluidos los que no tienen raza o color registrada.",
     "F25": "El método de medición cambia entre años; no comparar 2010, 2015 y 2020.",
     "F26": "El método de medición cambia entre años; no comparar 2010, 2015 y 2020.",
     "F27": "El método de medición cambia entre años; no comparar 2010, 2015 y 2020.",
@@ -61,7 +69,8 @@ ADVERTENCIA_POBLACION = "Población del censo 2022 (F41); las paradas y estacion
 
 
 def es_sensible(fuente_id: str, campo: str) -> bool:
-    return campo in CAMPOS_SENSIBLES.get(fuente_id, set())
+    """Sensible según el Diccionario y sin una excepción del equipo en PUBLICACION_AUTORIZADA."""
+    return campo in CAMPOS_SENSIBLES.get(fuente_id, set()) and (fuente_id, campo) not in PUBLICACION_AUTORIZADA
 
 
 def filtrar_registros(registros: list[dict]) -> list[dict]:
@@ -82,19 +91,26 @@ def filtrar_propiedades(gdf: gpd.GeoDataFrame, fuente_id: str) -> gpd.GeoDataFra
     return gdf.drop(columns=sensibles)
 
 
-def publicar(ruta_relativa: str, contenido) -> None:
+def publicar(ruta_relativa: str, contenido, silencioso: bool = False) -> None:
     """Única puerta de salida a public/data/."""
     destino = PUBLIC_DATA / ruta_relativa
     destino.parent.mkdir(parents=True, exist_ok=True)
     if isinstance(contenido, dict) and "indicadores" in contenido:
         contenido = {**contenido, "indicadores": filtrar_registros(contenido["indicadores"])}
-    texto = json.dumps(contenido, ensure_ascii=False, separators=(",", ":"))
+    # allow_nan=False: un NaN rompería el JSON en el navegador; mejor fallar aquí.
+    texto = json.dumps(contenido, ensure_ascii=False, separators=(",", ":"), allow_nan=False)
     destino.write_text(texto, encoding="utf-8")
-    print(f"  public/data/{ruta_relativa}: {len(texto) / 1024:,.0f} KB")
+    if not silencioso:
+        print(f"  public/data/{ruta_relativa}: {len(texto) / 1024:,.0f} KB")
 
 
 def publicar_geo(
-    ruta_relativa: str, gdf: gpd.GeoDataFrame, fuente_id: str | None, tolerancia_m: float = 0, decimales: int = 5
+    ruta_relativa: str,
+    gdf: gpd.GeoDataFrame,
+    fuente_id: str | None,
+    tolerancia_m: float = 0,
+    decimales: int = 5,
+    silencioso: bool = False,
 ) -> None:
     gdf = filtrar_propiedades(gdf, fuente_id) if fuente_id else gdf
     if tolerancia_m:
@@ -108,7 +124,7 @@ def publicar_geo(
         f["geometry"] = redondear(f["geometry"], decimales)
     if fuente_id:
         geojson["fuente_id"] = fuente_id  # verificar.py revisa las propiedades contra esta fuente
-    publicar(ruta_relativa, geojson)
+    publicar(ruta_relativa, geojson, silencioso)
 
 
 def redondear(geom: dict, decimales: int = 5) -> dict:
@@ -139,6 +155,7 @@ def indicador(
     clave=None,
     fuentes_adicionales=None,
     advertencia=None,
+    transformacion=None,
 ) -> dict:
     """clave es el nombre del indicador en el id; por omisión, campo_lago + id_extra."""
     assert tipo in TIPOS
@@ -160,6 +177,9 @@ def indicador(
         registro["calculo"] = calculo
     if fuentes_adicionales:
         registro["fuentes_adicionales"] = fuentes_adicionales
+    if transformacion:
+        # Campos Sensibles que salen transformados (config.PUBLICACION_TRANSFORMADA).
+        registro["transformacion"] = transformacion
     return registro
 
 
@@ -228,12 +248,7 @@ def construir_empleo():
     registros = []
     campos = [("establecimientos_formales", "Establecimientos", "F11"), ("empleos_formales", "Empleos", "F12")]
     for fila in lago.itertuples():
-        if fila.nivel == "distrito":
-            codigo, nombre = fila.codigo_distrito, nombres_dist[fila.codigo_distrito]
-        elif fila.nivel == "subprefeitura":
-            codigo, nombre = fila.codigo_subprefeitura, nombres_sub[fila.codigo_subprefeitura]
-        else:
-            codigo, nombre = "MSP", "Município de São Paulo"
+        codigo, nombre = territorio(fila, nombres_dist, nombres_sub)
         for campo, unidad, fuente in campos:
             registros.append(
                 indicador(
@@ -277,7 +292,94 @@ def construir_empleo():
                 )
             )
 
+    registros += empleo_por_sexo(nombres_dist, nombres_sub)
+    registros += empleo_por_raza(nombres_dist, nombres_sub)
     publicar_por_partes("empleo", "P2", registros)
+
+
+def territorio(fila, nombres_dist: dict, nombres_sub: dict) -> tuple[str, str]:
+    """Código y nombre visible de una fila de Infocidade ya unida a la tabla de equivalencias."""
+    if fila.nivel == "distrito":
+        return fila.codigo_distrito, nombres_dist[fila.codigo_distrito]
+    if fila.nivel == "subprefeitura":
+        return fila.codigo_subprefeitura, nombres_sub[fila.codigo_subprefeitura]
+    return "MSP", "Município de São Paulo"
+
+
+def leer_por_unidad(archivo: str) -> pd.DataFrame:
+    """Tabla del lago por unidad territorial, sin inválidos ni no localizados y con sus códigos."""
+    df = pd.read_csv(LAGO / archivo)
+    df = df[df["nivel"].isin(["municipio", "subprefeitura", "distrito"])]
+    return unir_subprefeituras(unir_distritos(df))
+
+
+FUENTE_SEXO = {2024: "F13", 2023: "F14", 2022: "F15"}
+FUENTE_RAZA = {2024: "F16", 2023: "F17"}
+ETIQUETAS_RAZA = {
+    "amarela": "amarilla",
+    "branca": "blanca",
+    "indigena": "indígena",
+    "parda": "parda",
+    "preta": "preta",
+    "nao_identificada": "no identificada",
+}
+
+
+def empleo_por_sexo(nombres_dist: dict, nombres_sub: dict) -> list[dict]:
+    registros = []
+    for fila in leer_por_unidad("empleo_sexo.csv").itertuples():
+        codigo, nombre = territorio(fila, nombres_dist, nombres_sub)
+        total = fila.empleos_masculino + fila.empleos_femenino
+        registros.append(
+            indicador(
+                clave="empleos_femenino_pct",
+                campo_lago="empleos_femenino",
+                valor=100 * fila.empleos_femenino / total if total else None,
+                unidad="% de los empleos",
+                nivel=fila.nivel,
+                codigo=codigo,
+                nombre=nombre,
+                fuente_id=FUENTE_SEXO[fila.anio],
+                vigencia=fila.anio,
+                calculo="empleos_femenino / (empleos_masculino + empleos_femenino) × 100",
+            )
+        )
+    return registros
+
+
+def empleo_por_raza(nombres_dist: dict, nombres_sub: dict) -> list[dict]:
+    """Raza o color es Sensible: sale solo como porcentaje, y se suprime bajo el umbral."""
+    df = leer_por_unidad("empleo_raza.csv")
+    claves = ["anio", "nivel", "unidad_territorial"]
+    ancho = df.pivot_table(index=claves, columns="raza_color", values="empleos", aggfunc="sum").reset_index()
+    ancho = ancho.merge(df.drop_duplicates(claves)[[*claves, "codigo_distrito", "codigo_subprefeitura"]], on=claves)
+    ancho["preta_parda"] = ancho["preta"] + ancho["parda"]
+    categorias = [*ETIQUETAS_RAZA, "preta_parda"]
+    registros = []
+    for fila in ancho.itertuples():
+        codigo, nombre = territorio(fila, nombres_dist, nombres_sub)
+        total = sum(getattr(fila, c) for c in ETIQUETAS_RAZA)
+        for categoria in categorias:
+            casos = getattr(fila, categoria)
+            suprimido = casos < UMBRAL_SUPRESION
+            etiqueta = ETIQUETAS_RAZA.get(categoria, "preta o parda")
+            registros.append(
+                indicador(
+                    clave=f"empleos_raza_{categoria}_pct",
+                    campo_lago="empleos",
+                    valor=None if suprimido or not total else 100 * casos / total,
+                    unidad="% de los empleos",
+                    nivel=fila.nivel,
+                    codigo=codigo,
+                    nombre=nombre,
+                    fuente_id=FUENTE_RAZA[fila.anio],
+                    vigencia=fila.anio,
+                    calculo=f"empleos de raza o color {etiqueta} / total de empleos × 100",
+                    advertencia=f"Menos de {UMBRAL_SUPRESION} empleos: la cifra se suprime." if suprimido else None,
+                    transformacion="porcentaje",
+                )
+            )
+    return registros
 
 
 def publicar_por_partes(seccion: str, pregunta: str, registros: list[dict]) -> None:
@@ -305,14 +407,18 @@ def publicar_por_partes(seccion: str, pregunta: str, registros: list[dict]) -> N
     )
 
 
+OPCIONALES = ("calculo", "fuentes_adicionales", "transformacion")
+
+
 def limpiar_nulos(df: pd.DataFrame) -> list[dict]:
-    """Quita las claves opcionales vacías (calculo, fuentes_adicionales) de cada registro."""
+    """Quita las claves opcionales vacías (calculo, fuentes_adicionales, transformacion) de cada registro."""
 
     def vacio(v):
         return v is None or (isinstance(v, float) and math.isnan(v))
 
+    # Al pasar por pandas, un valor suprimido (None) vuelve como NaN, que no es JSON válido.
     return [
-        {k: v for k, v in r.items() if not (k in ("calculo", "fuentes_adicionales") and vacio(v))}
+        {k: None if vacio(v) else v for k, v in r.items() if not (k in OPCIONALES and vacio(v))}
         for r in df.to_dict(orient="records")
     ]
 
@@ -480,10 +586,11 @@ def construir_transporte():
 
     construir_pasajeros(cabecera)
 
-    # Capas del mapa 3D (capa B). La red de bus va como una sola geometría sin atributos.
-    publicar_geo("transporte/red_bus.geojson", calculos_p1.red_bus(), "F29", tolerancia_m=10)
+    # Capas del mapa 3D (capa B). La red de bus va sin atributos (cada calle una vez) y,
+    # como las paradas, partida en celdas: el mapa baja solo las que ve al acercarse.
+    publicar_por_celdas("transporte/red_bus", calculos_p1.red_bus(), "F29", tolerancia_m=10)
     paradas = calculos_p1.capa("paradas")[["codigo_parada", "calle_numero", "geometry"]]
-    publicar_geo("transporte/paradas.geojson", paradas, "F30")
+    publicar_por_celdas("transporte/paradas", paradas, "F30")
     publicar_geo("transporte/metro.geojson", calculos_p1.capa("metro"), "F35", tolerancia_m=5)
     publicar_geo("transporte/tren.geojson", calculos_p1.capa("tren"), "F31", tolerancia_m=5)
     publicar_geo("transporte/estaciones.geojson", calculos_p1.capa("estaciones"), "F36")
@@ -541,6 +648,327 @@ def construir_pasajeros(cabecera: dict):
     publicar("indicadores/transporte/pasajeros.json", {**cabecera, "meses": meses, "indicadores": registros})
 
 
+# Celdas de 0,05° (unos 5 km): a zoom 14 la pantalla cubre unas cuatro.
+TAMANO_CELDA = 0.05
+
+
+def publicar_por_celdas(carpeta: str, gdf: gpd.GeoDataFrame, fuente_id: str, tolerancia_m: float = 0) -> None:
+    """Parte una capa en celdas de una cuadrícula y publica un archivo por celda más un índice.
+
+    Las líneas se cortan en el borde de cada celda; los puntos van a la celda que los contiene.
+    """
+    if tolerancia_m:
+        gdf = gdf.to_crs(CRS_TRABAJO)
+        gdf["geometry"] = gdf.geometry.simplify(tolerancia_m, preserve_topology=False)
+    gdf = gdf.to_crs(CRS_WEB)
+    oeste, sur, este, norte = gdf.total_bounds
+    celdas = []
+    for x in range(math.floor(oeste / TAMANO_CELDA), math.floor(este / TAMANO_CELDA) + 1):
+        for y in range(math.floor(sur / TAMANO_CELDA), math.floor(norte / TAMANO_CELDA) + 1):
+            caja = shapely.box(x * TAMANO_CELDA, y * TAMANO_CELDA, (x + 1) * TAMANO_CELDA, (y + 1) * TAMANO_CELDA)
+            if (gdf.geom_type == "Point").all():
+                parte = gdf[gdf.geometry.x.floordiv(TAMANO_CELDA).eq(x) & gdf.geometry.y.floordiv(TAMANO_CELDA).eq(y)]
+            else:
+                parte = gdf.clip(caja, keep_geom_type=True)
+            parte = parte[parte.geometry.notna() & ~parte.geometry.is_empty]
+            if parte.empty:
+                continue
+            publicar_geo(f"{carpeta}/{x}_{y}.geojson", parte, fuente_id, silencioso=True)
+            celdas.append(f"{x}_{y}")
+    publicar(f"{carpeta}/indice.json", {"fuente_id": fuente_id, "tamano_celda": TAMANO_CELDA, "celdas": celdas})
+
+
+def construir_equipamientos():
+    """P1, segunda parte: escuelas, deporte, ferias y shoppings por distrito."""
+    res, vigencias = calculos_equipamientos.equipamientos_por_distrito()
+    nombres_dist, _ = nombres_visibles()
+    vig = {
+        "F33": vigencia_descarga("geosampa_centros_esportivos"),
+        "F34": vigencia_descarga("geosampa_estadios"),
+        "F39": vigencia_descarga("geosampa_educacao_infantil"),
+        "F40": vigencia_descarga("geosampa_educacao_rede_publica"),
+        **vigencias,
+    }
+    por_10mil = "por 10 mil habitantes (población del censo 2022, F41)"
+    # (clave, columna, campo_lago, fuente, unidad, tipo, adicionales, cálculo)
+    metricas = [
+        (
+            "escuelas_infantil",
+            "escuelas_infantil",
+            "codigo_equipamento",
+            "F39",
+            "Escuelas",
+            "observado",
+            None,
+            "escuelas públicas de educación infantil dentro del distrito",
+        ),
+        (
+            "escuelas_infantil_por_10mil",
+            "escuelas_infantil_por_10mil",
+            "codigo_equipamento",
+            "F39",
+            "Escuelas por 10 mil hab.",
+            "observado",
+            ["F41"],
+            f"escuelas de educación infantil {por_10mil}",
+        ),
+        (
+            "escuelas_basica",
+            "escuelas_basica",
+            "codigo_equipamento",
+            "F40",
+            "Escuelas",
+            "observado",
+            None,
+            "escuelas públicas de enseñanza fundamental y media dentro del distrito",
+        ),
+        (
+            "escuelas_basica_por_10mil",
+            "escuelas_basica_por_10mil",
+            "codigo_equipamento",
+            "F40",
+            "Escuelas por 10 mil hab.",
+            "observado",
+            ["F41"],
+            f"escuelas de enseñanza fundamental y media {por_10mil}",
+        ),
+        (
+            "centros_deportivos",
+            "centros_deportivos",
+            "id_equipamiento",
+            "F33",
+            "Centros",
+            "observado",
+            None,
+            "centros deportivos y balnearios dentro del distrito",
+        ),
+        (
+            "estadios",
+            "estadios",
+            "id_equipamiento",
+            "F34",
+            "Estadios",
+            "observado",
+            None,
+            "clubes con estadio dentro del distrito",
+        ),
+        (
+            "ferias",
+            "ferias",
+            "cantidad",
+            "F21",
+            "Ferias",
+            "observado",
+            None,
+            "ferias libres del distrito según la tabla de Infocidade",
+        ),
+        (
+            "ferias_por_10mil",
+            "ferias_por_10mil",
+            "cantidad",
+            "F21",
+            "Ferias por 10 mil hab.",
+            "observado",
+            ["F41"],
+            f"ferias libres {por_10mil}",
+        ),
+        (
+            "mercados",
+            "mercados",
+            "cantidad",
+            "F21",
+            "Mercados",
+            "observado",
+            None,
+            "mercados y sacolões municipales del distrito",
+        ),
+        (
+            "shoppings",
+            "shoppings",
+            "id_shopping",
+            "F22",
+            "Shoppings",
+            "observado",
+            None,
+            "shoppings del censo de ABRASCE ubicados en el distrito",
+        ),
+        (
+            "abl_shoppings",
+            "abl_shoppings_m2",
+            "abl_m2",
+            "F22",
+            "m² de ABL",
+            "observado",
+            None,
+            "suma del área bruta locable de los shoppings del distrito",
+        ),
+    ]
+    registros = []
+    for codigo, fila in res.iterrows():
+        nivel = "municipio" if codigo == "MSP" else "distrito"
+        nombre = "Município de São Paulo" if codigo == "MSP" else nombres_dist[codigo]
+        for clave, columna, campo, fuente, unidad, tipo, adicionales, calculo in metricas:
+            registros.append(
+                indicador(
+                    clave=clave,
+                    campo_lago=campo,
+                    valor=fila[columna],
+                    unidad=unidad,
+                    nivel=nivel,
+                    codigo=codigo,
+                    nombre=nombre,
+                    fuente_id=fuente,
+                    vigencia=vig[fuente],
+                    tipo=tipo,
+                    calculo=calculo,
+                    fuentes_adicionales=adicionales,
+                )
+            )
+    cabecera = {"seccion": "equipamientos", "pregunta": "P1", "generado": dt.date.today().isoformat()}
+    publicar("indicadores/equipamientos/distritos.json", {**cabecera, "indicadores": registros})
+
+    capas = {
+        "escuelas_infantil": ("F39", ["codigo_equipamento", "nombre", "direccion"]),
+        "escuelas_basica": ("F40", ["codigo_equipamento", "nombre", "direccion"]),
+        "centros_deportivos": ("F33", ["nombre", "tipo", "direccion"]),
+        "estadios": ("F34", ["nombre", "tipo", "direccion"]),
+    }
+    for nombre, (fuente, columnas) in capas.items():
+        gdf = calculos_p1.capa(nombre)
+        publicar_geo(f"equipamientos/{nombre}.geojson", gdf[[*columnas, "geometry"]], fuente)
+
+
+ADVERTENCIA_DOMICILIOS_FAVELA = "No se sabe si los domicilios de la capa son un conteo o una estimación de HABITASAMPA."
+
+
+def construir_gente():
+    """Favelas por distrito (F32) y área construida residencial del municipio (F28)."""
+    res = calculos_equipamientos.favelas_por_distrito()
+    nombres_dist, _ = nombres_visibles()
+    vig = vigencia_descarga("geosampa_favelas")
+    metricas = [
+        (
+            "favelas",
+            "favelas",
+            "id_favela",
+            "Favelas",
+            "observado",
+            None,
+            "favelas cuya mayor parte está en el distrito",
+        ),
+        (
+            "domicilios_favela",
+            "domicilios_favela",
+            "domicilios",
+            "Domicilios",
+            "estimado",
+            None,
+            "domicilios de las favelas del distrito; una favela que cruza el límite se reparte por área",
+        ),
+        (
+            "domicilios_favela_pct",
+            "domicilios_favela_pct",
+            "domicilios",
+            "% de los domicilios",
+            "estimado",
+            ["F41"],
+            "domicilios en favelas / domicilios del censo 2022 (F41) × 100",
+        ),
+        (
+            "area_favela_pct",
+            "area_favela_pct",
+            "area_m2",
+            "% del área",
+            "observado",
+            None,
+            "área de favelas en el distrito / área del distrito × 100",
+        ),
+    ]
+    registros = []
+    for codigo, fila in res.iterrows():
+        nivel = "municipio" if codigo == "MSP" else "distrito"
+        nombre = "Município de São Paulo" if codigo == "MSP" else nombres_dist[codigo]
+        for clave, columna, campo, unidad, tipo, adicionales, calculo in metricas:
+            registros.append(
+                indicador(
+                    clave=clave,
+                    campo_lago=campo,
+                    valor=fila[columna],
+                    unidad=unidad,
+                    nivel=nivel,
+                    codigo=codigo,
+                    nombre=nombre,
+                    fuente_id="F32",
+                    vigencia=vig,
+                    tipo=tipo,
+                    calculo=calculo,
+                    fuentes_adicionales=adicionales,
+                    advertencia=ADVERTENCIA_DOMICILIOS_FAVELA if campo == "domicilios" else None,
+                )
+            )
+    cabecera = {"seccion": "gente", "pregunta": "", "generado": dt.date.today().isoformat()}
+    publicar("indicadores/gente/distritos.json", {**cabecera, "indicadores": registros})
+
+    area = pd.read_csv(LAGO / "area_construida_residencial.csv")
+    serie = [
+        indicador(
+            campo_lago="area_residencial_m2",
+            valor=fila.area_residencial_m2 / 1e6,
+            unidad="km²",
+            nivel="municipio",
+            codigo="MSP",
+            nombre="Município de São Paulo",
+            fuente_id="F28",
+            vigencia=fila.anio,
+            calculo="área construida residencial del catastro del IPTU (enero de cada año) / 1.000.000",
+        )
+        for fila in area.itertuples()
+    ]
+    publicar("indicadores/gente/area_construida.json", {**cabecera, "indicadores": serie})
+
+    # Con el nombre (excepción del equipo en config.PUBLICACION_AUTORIZADA), pero sin la calle ni la
+    # propiedad del terreno, que son Sensibles: publicar_geo los quita.
+    publicar_geo("gente/favelas.geojson", calculos_p1.capa("favelas"), "F32", tolerancia_m=3)
+
+
+FUENTE_VEGETACION = {2020: "F25", 2015: "F26", 2010: "F27"}
+
+
+def construir_ambiente():
+    """Cobertura vegetal por habitante por subprefeitura (F25-F27). Cada año es un método distinto."""
+    df = pd.read_csv(LAGO / "cobertura_vegetal.csv")
+    df = unir_subprefeituras(df)
+    _, nombres_sub = nombres_visibles()
+    registros = []
+    for fila in df.itertuples():
+        codigo = "MSP" if fila.nivel == "municipio" else fila.codigo_subprefeitura
+        nombre = "Município de São Paulo" if codigo == "MSP" else nombres_sub[codigo]
+        fuente = FUENTE_VEGETACION[fila.anio]
+        comunes = {"nivel": fila.nivel, "codigo": codigo, "nombre": nombre, "fuente_id": fuente, "vigencia": fila.anio}
+        registros.append(
+            indicador(
+                clave="cobertura_vegetal_por_hab",
+                campo_lago="cobertura_vegetal_m2",
+                valor=fila.cobertura_vegetal_m2 / fila.poblacion,
+                unidad="m² por habitante",
+                calculo="cobertura_vegetal_m2 / poblacion (de la misma tabla)",
+                **comunes,
+            )
+        )
+        registros.append(
+            indicador(
+                clave="cobertura_vegetal_km2",
+                campo_lago="cobertura_vegetal_m2",
+                valor=fila.cobertura_vegetal_m2 / 1e6,
+                unidad="km²",
+                calculo=f"cobertura_vegetal_m2 / 1.000.000; método: {fila.metodo_cobertura}",
+                **comunes,
+            )
+        )
+    cabecera = {"seccion": "ambiente", "pregunta": "", "generado": dt.date.today().isoformat()}
+    publicar("indicadores/ambiente/subprefeituras.json", {**cabecera, "indicadores": registros})
+
+
 def construir_catalogo():
     fuentes = pd.read_csv(FUENTES_CSV, dtype=str).fillna("")
     dicc = pd.read_csv(DICCIONARIO_CSV, dtype=str).fillna("")
@@ -555,6 +983,9 @@ def main():
     construir_territorio()
     construir_empleo()
     construir_transporte()
+    construir_equipamientos()
+    construir_gente()
+    construir_ambiente()
 
 
 if __name__ == "__main__":

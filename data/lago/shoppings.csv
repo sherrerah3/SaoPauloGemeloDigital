@@ -1,0 +1,159 @@
+anio,id_shopping,nombre,subprefeitura,distrito,abl_m2,tiendas,fecha_inauguracion
+2017,boavista_shopping,Boavista Shopping,Santo Amaro,Santo Amaro,13290.8,145,2004-04-27
+2017,bourbon_shopping_sao_paulo,Bourbon Shopping São Paulo,Lapa,Barra Funda,51344.0,195,2008-03-28
+2017,butanta_shopping,Butantã Shopping,Butantã,Vila Sônia,41351.22,160,1994-05-03
+2017,central_plaza_shopping_center,Central Plaza Shopping Center,Vila Prudente,Vila Prudente,72425.0,205,1999-09-30
+2017,centro_comercial_aricanduva,Centro Comercial Aricanduva,Itaquera,Cidade Lider,257047.16,545,1991-09-19
+2017,complexo_comercial_do_shopping_interlagos,Complexo Comercial Do Shopping Interlagos,Santo Amaro,Campo Grande,145000.0,478,1988-09-28
+2017,continental_shopping,Continental Shopping,Lapa,Jaguaré,30221.0,160,1975-10-18
+2017,d_d_decoracao_e_design_center,D&D Decoração E Design Center,Pinheiros,Itaim Bibi,17036.3,91,1995-08-31
+2017,mais_shopping,Mais Shopping,Santo Amaro,Santo Amaro,13000.0,195,2010-10-29
+2017,market_place_shopping_center,Market Place Shopping Center,Santo Amaro,Santo Amaro,26548.0,150,1995-09-29
+2017,mega_polo_moda,Mega Polo Moda,Mooca,Brás,19000.0,400,2005-09-12
+2017,mooca_plaza_shopping,Mooca Plaza Shopping,Mooca,Mooca,42077.88,232,2011-11-29
+2017,morumbishopping,Morumbishopping,Santo Amaro,Santo Amaro,56028.99,406,1982-05-03
+2017,raposo_shopping,Raposo Shopping,Butantã,Vila Sônia,3447.09,180,1996-05-28
+2017,santana_parque_shopping,Santana Parque Shopping,Santana - Tucuruvi,Mandaqui,26488.07,162,2007-10-25
+2017,shopping_analia_franco,Shopping Anália Franco,Aricanduva,Vila Formosa,51590.26,402,1999-11-09
+2017,shopping_campo_limpo,Shopping Campo Limpo,Campo Limpo,Capão Redondo,22200.0,135,2005-11-30
+2017,shopping_center_3,Shopping Center 3,Sé,Consolação,10930.0,140,1967-07-28
+2017,shopping_center_iguatemi_sao_paulo,Shopping Center Iguatemi São Paulo,Pinheiros,Pinheiros,48888.0,302,1966-11-28
+2017,shopping_center_lapa_sp,Shopping Center Lapa-SP,Lapa,Lapa,8188.61,113,1968-11-24
+2017,shopping_center_norte,Shopping Center Norte,Vila Maria,Vila Guilherme,66095.0,331,1984-04-07
+2017,shopping_center_penha,Shopping Center Penha,Penha,Penha,29642.0,183,1992-10-19
+2017,shopping_cidade_jardim,Shopping Cidade Jardim,Butantã,Morumbi,39159.0,197,2008-05-28
+2017,shopping_cidade_sao_paulo,Shopping Cidade São Paulo,Sé,Bela Vista,16637.41,149,2015-04-30
+2017,shopping_d,Shopping D,Mooca,Pari,28763.73,175,1994-10-06
+2017,shopping_eldorado,Shopping Eldorado,Pinheiros,Pinheiros,75443.4,351,1981-09-10
+2017,shopping_fiesta,Shopping Fiesta,Capela do Socorro,Socorro,31030.0,60,1994-12-06
+2017,shopping_frei_caneca,Shopping Frei Caneca,Sé,Bela Vista,23219.56,154,2001-05-08
+2017,shopping_ibirapuera,Shopping Ibirapuera,Vila Mariana,Moema,49528.81,426,1976-08-06
+2017,shopping_jardim_sul,Shopping Jardim Sul,Campo Limpo,Vila Andrade,28321.56,188,1990-01-01
+2017,shopping_jk_iguatemi,Shopping Jk Iguatemi,Pinheiros,Itaim Bibi,34359.0,211,2012-06-22
+2017,shopping_lar_center,Shopping Lar Center,Vila Maria,Vila Guilherme,52168.81,101,1987-06-12
+2017,shopping_light,Shopping Light,Sé,República,18600.0,135,1999-11-19
+2017,shopping_metro_boulevard_tatuape,Shopping Metro Boulevard Tatuapé,Mooca,Tatuapé,19002.95,131,2007-05-08
+2017,shopping_metro_itaquera,Shopping Metrô Itaquera,Itaquera,Itaquera,65505.79,300,2007-11-07
+2017,shopping_metro_santa_cruz,Shopping Metrô Santa Cruz,Vila Mariana,Vila Mariana,18897.03,128,2001-11-18
+2017,shopping_metro_tatuape,Shopping Metrô Tatuapé,Mooca,Tatuapé,33408.0,282,1997-10-27
+2017,shopping_metro_tucuruvi,Shopping Metrô Tucuruvi,Santana - Tucuruvi,Tucuruvi,32848.0,224,2013-04-18
+2017,shopping_nacoes_unidas,Shopping Nações Unidas,Pinheiros,Itaim Bibi,4950.0,48,2000-01-12
+2017,shopping_patio_higienopolis,Shopping Pátio Higienópolis,Sé,Consolação,33820.0,305,1999-10-18
+2017,shopping_patio_paulista,Shopping Pátio Paulista,Sé,Bela Vista,42427.95,276,1989-11-13
+2017,shopping_plaza_sul,Shopping Plaza Sul,IPIRANGA,Cursino,23500.0,214,1994-04-26
+2017,shopping_sp_market,Shopping SP Market,Santo Amaro,Campo Grande,69140.88,234,1994-09-20
+2017,shopping_vila_olimpia,Shopping Vila Olímpia,Pinheiros,Itaim Bibi,28367.4,221,2009-11-24
+2017,shopping_villa_lobos,Shopping Villa Lobos,Pinheiros,Alto de Pinheiros,27215.6,210,2000-04-19
+2017,shopping_west_plaza,Shopping West Plaza,Lapa,Barra Funda,37404.0,200,1991-05-02
+2017,tiete_plaza_shopping,Tietê Plaza Shopping,Pirituba - Jaraguá,Pirituba,37360.0,217,2013-12-18
+2017,top_center_shopping,Top Center Shopping,Sé,Bela Vista,6557.0,85,2004-12-07
+2021,boavista_shopping,BOAVISTA SHOPPING,SANTO AMARO,SANTO AMARO,13290.7999999999,145,2004-04-27
+2021,bourbon_shopping_sao_paulo,BOURBON SHOPPING SAO PAULO,LAPA,BARRA FUNDA,51344.0,195,2008-03-28
+2021,butanta_shopping,BUTANTA SHOPPING,BUTANTA,VILA SONIA,41351.22,160,1994-05-03
+2021,cantareira_norte_shopping,CANTAREIRA NORTE SHOPPING,PIRITUBA-JARAGUA,JARAGUA,27000.0,200,2016-04-27
+2021,central_plaza_shopping_center,CENTRAL PLAZA SHOPPING CENTER,VILA PRUDENTE,VILA PRUDENTE,72425.0,205,1999-09-30
+2021,centro_comercial_aricanduva,CENTRO COMERCIAL ARICANDUVA,ITAQUERA,CIDADE LIDER,257047.16,545,1991-09-19
+2021,cidade_jardim_shops,CIDADE JARDIM SHOPS,PINHEIROS,JARDIM PAULISTA,5000.0,190,2020-12-04
+2021,complexo_comercial_do_shopping_interlagos,COMPLEXO COMERCIAL DO SHOPPING INTERLAGOS,SANTO AMARO,CAMPO GRANDE,145000.0,478,1988-09-28
+2021,continental_shopping,CONTINENTAL SHOPPING,LAPA,JAGUARE,30221.0,160,1975-10-18
+2021,d_d_decoracao_e_design_center,D&D DECORACAO E DESIGN CENTER,PINHEIROS,ITAIM BIBI,17036.2999999999,91,1995-08-31
+2021,jardim_pamplona_shopping,JARDIM PAMPLONA SHOPPING,PINHEIROS,JARDIM PAULISTA,11000.0,80,2017-07-27
+2021,mais_shopping,MAIS SHOPPING,SANTO AMARO,SANTO AMARO,13000.0,195,2010-10-29
+2021,market_place_shopping_center,MARKET PLACE SHOPPING CENTER,PINHEIROS,SANTO AMARO,26548.0,150,1995-09-29
+2021,mega_polo_moda,MEGA POLO MODA,MOOCA,BRAS,19000.0,400,2005-09-12
+2021,mooca_plaza_shopping,MOOCA PLAZA SHOPPING,MOOCA,MOOCA,42077.8799999999,232,2011-11-29
+2021,morumbi_shopping,MORUMBI SHOPPING,PINHEIROS,SANTO AMARO,56028.9899999999,406,1982-05-03
+2021,morumbi_town_shopping,MORUMBI TOWN SHOPPING,CAMPO LIMPO,VILA ANDRADE,31103.0,102,2016-04-27
+2021,raposo_shopping,RAPOSO SHOPPING,BUTANTA,VILA SONIA,3447.09,180,1996-05-28
+2021,santana_parque_shopping,SANTANA PARQUE SHOPPING,SANTANA-TUCURUVI,MANDAQUI,26488.0699999999,162,2007-10-11
+2021,shopping_analia_franco,SHOPPING ANALIA FRANCO,ARICANDUVA-FORMOSA-CARRAO,VILA FORMOSA,51590.26,402,1999-11-09
+2021,shopping_campo_limpo,SHOPPING CAMPO LIMPO,CAMPO LIMPO,CAPAO REDONDO,22200.0,135,2005-11-01
+2021,shopping_center_3,SHOPPING CENTER 3,SE,CONSOLACAO,10930.0,140,1967-07-27
+2021,shopping_center_iguatemi_sao_paulo,SHOPPING CENTER IGUATEMI SAO PAULO,PINHEIROS,PINHEIROS,48888.0,302,1966-11-28
+2021,shopping_center_lapa_sp,SHOPPING CENTER LAPA-SP,LAPA,LAPA,8188.60999999999,113,1968-11-24
+2021,shopping_center_norte,SHOPPING CENTER NORTE,VILA MARIA-VILA GUILHERME,VILA GUILHERME,66095.0,330,1984-04-07
+2021,shopping_center_penha,SHOPPING CENTER PENHA,PENHA,PENHA,29642.0,183,1992-10-18
+2021,shopping_cidade_jardim,SHOPPING CIDADE JARDIM,BUTANTA,MORUMBI,39159.0,197,2008-05-28
+2021,shopping_cidade_sao_paulo,SHOPPING CIDADE SAO PAULO,SE,BELA VISTA,16637.4099999999,149,2015-04-27
+2021,shopping_d,SHOPPING D,MOOCA,PARI,28763.7299999999,175,1994-10-06
+2021,shopping_eldorado,SHOPPING ELDORADO,PINHEIROS,PINHEIROS,75443.3999999999,351,1981-09-10
+2021,shopping_fiesta,SHOPPING FIESTA,CAPELA DO SOCORRO,SOCORRO,31030.0,60,1994-12-06
+2021,shopping_frei_caneca,SHOPPING FREI CANECA,SE,BELA VISTA,23219.56,154,2001-05-08
+2021,shopping_ibirapuera,SHOPPING IBIRAPUERA,VILA MARIANA,MOEMA,49528.8099999999,426,1976-08-06
+2021,shopping_jaragua_cenesp,SHOPPING JARAGUA CENESP,M'BOI MIRIM,JARDIM SAO LUIS,11611.52,107,1977-04-15
+2021,shopping_jardim_sul,SHOPPING JARDIM SUL,CAMPO LIMPO,VILA ANDRADE,28321.56,188,1990-06-01
+2021,shopping_jk_iguatemi,SHOPPING JK IGUATEMI,PINHEIROS,ITAIM BIBI,34359.0,211,2012-06-22
+2021,shopping_lar_center,SHOPPING LAR CENTER,VILA MARIA-VILA GUILHERME,VILA GUILHERME,52168.8099999999,101,1987-06-12
+2021,shopping_light,SHOPPING LIGHT,SE,REPUBLICA,18600.0,135,1999-11-19
+2021,shopping_metro_boulevard_tatuape,SHOPPING METRO BOULEVARD TATUAPE,MOOCA,TATUAPE,19002.95,131,2007-05-08
+2021,shopping_metro_itaquera,SHOPPING METRO ITAQUERA,ITAQUERA,ITAQUERA,65505.79,300,2007-11-07
+2021,shopping_metro_santa_cruz,SHOPPING METRO SANTA CRUZ,VILA MARIANA,VILA MARIANA,18897.0299999999,128,2001-11-01
+2021,shopping_metro_tatuape,SHOPPING METRO TATUAPE,MOOCA,TATUAPE,33408.0,282,1997-10-27
+2021,shopping_metro_tucuruvi,SHOPPING METRO TUCURUVI,SANTANA-TUCURUVI,TUCURUVI,32848.0,224,2013-04-18
+2021,shopping_nacoes_unidas,SHOPPING NACOES UNIDAS,PINHEIROS,ITAIM BIBI,4950.0,48,2000-01-12
+2021,shopping_parque_da_cidade,SHOPPING PARQUE DA CIDADE,SANTO AMARO,SANTO AMARO,19104.0,120,2019-05-30
+2021,shopping_patio_higienopolis,SHOPPING PATIO HIGIENOPOLIS,SE,SANTA CECILIA,33820.0,305,1999-10-18
+2021,shopping_patio_paulista,SHOPPING PATIO PAULISTA,SE,BELA VISTA,42427.9499999999,276,1989-11-13
+2021,shopping_plaza_sul,SHOPPING PLAZA SUL,IPIRANGA,CURSINO,23500.0,214,1994-04-25
+2021,shopping_sp_market,SHOPPING SP MARKET,SANTO AMARO,CAMPO GRANDE,69140.88,234,1994-09-20
+2021,shopping_vila_olimpia,SHOPPING VILA OLIMPIA,PINHEIROS,ITAIM BIBI,28367.4,221,2009-11-24
+2021,shopping_villa_lobos,SHOPPING VILLA LOBOS,PINHEIROS,ALTO DE PINHEIROS,27215.5999999999,210,2000-04-29
+2021,shopping_west_plaza,SHOPPING WEST PLAZA,LAPA,BARRA FUNDA,37404.0,200,1991-05-02
+2021,tiete_plaza_shopping,TIETE PLAZA SHOPPING,PIRITUBA-JARAGUA,PIRITUBA,37360.0,217,2013-12-18
+2021,top_center_shopping,TOP CENTER SHOPPING,SE,BELA VISTA,6557.0,85,1975-01-01
+2025,andorinha_hiper_center,Andorinha Hiper Center,Santana-Tucuruvi,Mandaqui,12500.0,,
+2025,boavista_shopping,Boavista Shopping,Santo Amaro,Santo Amaro,26196.26,126,2004-04-27
+2025,bourbon_shopping_sao_paulo,Bourbon Shopping São Paulo,Lapa,Barra Funda,57384.02,194,2008-03-28
+2025,butanta_shopping,Butantã Shopping,Butantã,Vila Sônia,28294.68,130,1994-05-03
+2025,cantareira_norte_shopping,Cantareira Norte Shopping,Pirituba-Jaraguá,Jaraguá,28200.0,130,2016-04-27
+2025,central_plaza_shopping_center,Central Plaza Shopping Center,Vila Prudente,Vila Prudente,72126.09,170,1999-09-30
+2025,centro_comercial_aricanduva,Centro Comercial Aricanduva,Itaquera,Cidade Líder,263271.39,545,1991-09-19
+2025,continental_shopping,Continental Shopping,Lapa,Jaguaré,31882.79,134,1975-10-18
+2025,d_d_decoracao_e_design_center,D&D Decoração E Design Center,Pinheiros,Itaim Bibi,17036.3,97,1995-08-31
+2025,jardim_pamplona_shopping,Jardim Pamplona Shopping,Pinheiros,Jardim Paulista,18973.29,80,2017-07-27
+2025,mais_shopping,Mais Shopping,Santo Amaro,Santo Amaro,22925.61,128,2010-10-29
+2025,market_place_shopping_center,Market Place Shopping Center,Santo Amaro,Santo Amaro,22177.0,85,1995-09-29
+2025,mega_polo_moda,Mega Polo Moda,Moóca,Brás,19000.0,,2005-09-12
+2025,mooca_plaza_shopping,Mooca Plaza Shopping,Moóca,Mooca,42074.98,222,2011-11-29
+2025,morumbi_town_shopping,Morumbi Town Shopping,Campo Limpo,Vila Andrade,30431.56,118,2016-10-11
+2025,morumbishopping,MorumbiShopping,Santo Amaro,Santo Amaro,55992.0,501,1982-05-03
+2025,partage_santana,Partage Santana,Santana-Tucuruvi,Mandaqui,26538.0,153,2007-10-25
+2025,paseo_alto_das_nacoes,Paseo Alto das Nações,Santo Amaro,Santo Amaro,13451.16,34,2022-12-01
+2025,plaza_sul_shopping,Plaza Sul Shopping,Ipiranga,Cursino,23500.0,207,1994-04-25
+2025,raposo_shopping,Raposo Shopping,Butantã,Vila Sônia,32974.0,180,1996-05-28
+2025,shopping_analia_franco,SHOPPING ANÁLIA FRANCO,Aricanduva-Formosa-Carrão,Vila Formosa,51590.0,405,1999-11-09
+2025,shopping_campo_limpo,Shopping Campo Limpo,Campo Limpo,Capão Redondo,30100.0,168,2005-11-30
+2025,shopping_center_3,Shopping Center 3,Sé,Consolação,10930.0,140,1967-07-27
+2025,shopping_center_lapa_sp,Shopping Center Lapa Sp,Lapa,Lapa,8248.0,122,1968-11-24
+2025,shopping_center_norte,Shopping Center Norte,Vila Maria-Vila Guilherme,Vila Guilherme,72538.0,300,1984-04-07
+2025,shopping_cidade_jardim,SHOPPING CIDADE JARDIM,Butantã,Morumbi,52000.0,217,2008-05-28
+2025,shopping_cidade_sao_paulo,Shopping Cidade São Paulo,Sé,Bela Vista,16905.0,160,2015-04-30
+2025,shopping_d,Shopping D,Mooca,Pari,30015.0,150,1994-10-06
+2025,shopping_eldorado,Shopping Eldorado,Pinheiros,Pinheiros,75460.0,305,1981-09-10
+2025,shopping_frei_caneca,Shopping Frei Caneca,Sé,Bela Vista,23462.12,130,2001-05-08
+2025,shopping_ibirapuera,Shopping Ibirapuera,Vila Mariana,Moema,51773.35,426,1976-08-06
+2025,shopping_iguatemi_sao_paulo,Shopping Iguatemi São Paulo,Pinheiros,Pinheiros,51000.0,250,1966-11-28
+2025,shopping_interlagos,Shopping Interlagos,Santo Amaro,Campo Grande,145000.0,441,1988-09-28
+2025,shopping_jaragua_cenesp,SHOPPING JARAGUÁ CENESP,M Boi Mirim,Jardim São Luis,11611.52,55,1977-04-15
+2025,shopping_jardim_sul,Shopping Jardim Sul,Campo Limpo,Vila Andrade,28816.17,178,1990-06-01
+2025,shopping_jk_iguatemi,Shopping Jk Iguatemi,Pinheiros,Itaim Bibi,34081.5,188,2012-06-22
+2025,shopping_lar_center,Shopping Lar Center,Vila Maria-Vila Guilherme,Vila Guilherme,50416.0,89,1987-06-12
+2025,shopping_light,Shopping Light,Sé,República,18498.09,98,1999-11-17
+2025,shopping_metro_boulevard_tatuape,Shopping Metrô Boulevard Tatuapé,Mooca,Tatuapé,19013.0,119,2007-05-08
+2025,shopping_metro_itaquera,Shopping Metrô Itaquera,Itaquera,Itaquera,68471.0,327,2007-11-07
+2025,shopping_metro_santa_cruz,Shopping Metrô Santa Cruz,Vila Mariana,Vila Mariana,18740.0,138,2001-11-19
+2025,shopping_metro_tatuape,Shopping Metrô Tatuapé,Mooca,Tatuapé,33408.34,364,1997-10-27
+2025,shopping_metro_tucuruvi,Shopping Metrô Tucuruvi,Santana-Tucuruvi,Tucuruvi,32966.28,210,2013-04-18
+2025,shopping_nacoes_unidas,Shopping Nações Unidas,Pinheiros,Itaim Bibi,4950.0,43,2000-01-12
+2025,shopping_parque_da_cidade,Shopping Parque Da Cidade,Santo Amaro,Santo Amaro,20000.0,106,2019-05-30
+2025,shopping_patio_higienopolis,Shopping Pátio Higienópolis,Sé,Consolação,34071.0,294,1999-10-18
+2025,shopping_patio_paulista,Shopping Pátio Paulista,Sé,Bela Vista,38104.95,297,1989-11-13
+2025,shopping_penha,Shopping Penha,Penha,Penha,29898.72,167,1992-10-19
+2025,shopping_sp_market,Shopping Sp Market,Santo Amaro,Campo Grande,86242.0,252,1994-09-20
+2025,shopping_vila_olimpia,Shopping Vila Olímpia,Pinheiros,Itaim Bibi,28373.0,217,2009-11-24
+2025,shopping_villa_lobos,Shopping Villa Lobos,Pinheiros,Alto De Pinheiros,28394.0,220,2000-04-19
+2025,shopping_west_plaza,Shopping West Plaza,Lapa,Barra Funda,36780.27,174,1991-05-02
+2025,shops_jardins,Shops Jardins,Pinheiros,Jardim Paulista,4951.12,72,2020-12-04
+2025,tiete_plaza_shopping,Tietê Plaza Shopping,Pirituba-Jaraguá,Pirituba,36914.0,193,2013-12-18
+2025,top_center_shopping,Top Center Shopping,Sé,Bela Vista,6595.0,49,1975-01-01
+2025,trimais_places,Trimais Places,Santana-Tucuruvi,Tucuruvi,25500.0,150,2021-05-25
