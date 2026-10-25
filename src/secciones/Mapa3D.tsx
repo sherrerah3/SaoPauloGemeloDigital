@@ -1,9 +1,10 @@
-import type { FeatureCollection } from "geojson";
+import type { Feature, FeatureCollection } from "geojson";
 import { useEffect, useRef, useState } from "react";
 import { agregarMascara, estiloSaoPaulo, LIMITES_NAVEGACION } from "../componentes/mapaBase";
 import {
   type CameraOptions,
   type ExpressionSpecification,
+  type GeoJSONSource,
   type LayerSpecification,
   Map as MapaML,
   type MapLayerMouseEvent,
@@ -39,14 +40,23 @@ const COLOR_POR_LINEA: ExpressionSpecification = [
 interface Capa {
   id: string;
   titulo: string;
-  archivo: string;
   fuente: string;
   muestra: string;
   capas: Omit<LayerSpecification, "source">[];
   popup?: (p: Record<string, unknown>) => string;
+  /** Un solo archivo, que se baja la primera vez que se enciende la capa. */
+  archivo?: string;
+  /** O una carpeta partida en celdas (build_web.py): se bajan solo las cercanas, desde este zoom. */
+  celdas?: { carpeta: string; desdeZoom: number };
 }
 
-// Capa B del plan. Se bajan solo cuando se encienden (las paradas pesan ~2 MB).
+interface IndiceCeldas {
+  tamano_celda: number;
+  celdas: string[];
+}
+
+// Capa B del plan. Se bajan solo cuando se encienden; la red de bus y las paradas, además,
+// solo al acercarse y por zonas (pesan unos 3 y 4 MB en total).
 const CAPAS: Capa[] = [
   {
     id: "metro",
@@ -92,13 +102,14 @@ const CAPAS: Capa[] = [
   {
     id: "red_bus",
     titulo: "Red de bus",
-    archivo: "transporte/red_bus.geojson",
+    celdas: { carpeta: "transporte/red_bus", desdeZoom: 12 },
     fuente: "F29",
     muestra: "#eb6834",
     capas: [
       {
         id: "red_bus",
         type: "line",
+        minzoom: 12,
         paint: {
           "line-color": "#eb6834",
           "line-width": ["interpolate", ["linear"], ["zoom"], 10, 0.6, 15, 2],
@@ -110,14 +121,14 @@ const CAPAS: Capa[] = [
   {
     id: "paradas",
     titulo: "Paradas de bus",
-    archivo: "transporte/paradas.geojson",
+    celdas: { carpeta: "transporte/paradas", desdeZoom: 13.5 },
     fuente: "F30",
     muestra: "#eb6834",
     capas: [
       {
         id: "paradas",
         type: "circle",
-        minzoom: 12.5,
+        minzoom: 13.5,
         paint: {
           "circle-radius": ["interpolate", ["linear"], ["zoom"], 13, 2, 17, 5],
           "circle-color": "#eb6834",
@@ -127,6 +138,57 @@ const CAPAS: Capa[] = [
       },
     ],
     popup: (p) => `Parada ${p.codigo_parada}<br><span class="popup-unidad">${p.calle_numero ?? ""}</span>`,
+  },
+  {
+    id: "escuelas_infantil",
+    titulo: "Escuelas infantiles",
+    archivo: "equipamientos/escuelas_infantil.geojson",
+    fuente: "F39",
+    muestra: "#f2b134",
+    capas: [{ id: "escuelas_infantil", type: "circle", paint: circulo("#f2b134") }],
+    popup: (p) =>
+      `<strong>${p.nombre}</strong><br><span class="popup-unidad">Educación infantil, ${p.direccion}</span>`,
+  },
+  {
+    id: "escuelas_basica",
+    titulo: "Escuelas fundamental y media",
+    archivo: "equipamientos/escuelas_basica.geojson",
+    fuente: "F40",
+    muestra: "#c8702a",
+    capas: [{ id: "escuelas_basica", type: "circle", paint: circulo("#c8702a") }],
+    popup: (p) => `<strong>${p.nombre}</strong><br><span class="popup-unidad">Escuela pública, ${p.direccion}</span>`,
+  },
+  {
+    id: "deporte",
+    titulo: "Centros deportivos",
+    archivo: "equipamientos/centros_deportivos.geojson",
+    fuente: "F33",
+    muestra: "#2e9e5b",
+    capas: [{ id: "deporte", type: "circle", paint: circulo("#2e9e5b", 6) }],
+    popup: (p) => `<strong>${p.nombre}</strong><br><span class="popup-unidad">${p.tipo}</span>`,
+  },
+  {
+    id: "estadios",
+    titulo: "Estadios",
+    archivo: "equipamientos/estadios.geojson",
+    fuente: "F34",
+    muestra: "#1b6e3c",
+    capas: [{ id: "estadios", type: "circle", paint: circulo("#1b6e3c", 7) }],
+    popup: (p) => `<strong>${p.nombre}</strong><br><span class="popup-unidad">${p.tipo}</span>`,
+  },
+  {
+    id: "favelas",
+    titulo: "Favelas",
+    archivo: "gente/favelas.geojson",
+    fuente: "F32",
+    muestra: "#c0504d",
+    capas: [
+      { id: "favelas", type: "fill", paint: { "fill-color": "#c0504d", "fill-opacity": 0.35 } },
+      { id: "favelas-borde", type: "line", paint: { "line-color": "#c0504d", "line-width": 1 } },
+    ],
+    // Sin la calle ni la propiedad del terreno: son campos Sensibles del Diccionario.
+    popup: (p) =>
+      `<strong>${p.nombre}</strong><br><span class="popup-unidad">Favela, ${p.domicilios ?? "s. d."} domicilios${p.anio_implantacion ? `, desde ${p.anio_implantacion}` : ""}</span>`,
   },
   {
     id: "distritos",
@@ -147,22 +209,38 @@ const CAPAS: Capa[] = [
     capas: [{ id: "subprefeituras", type: "line", paint: { "line-color": "#6250d6", "line-width": 2.2 } }],
   },
 ];
-const CAPAS_PENDIENTES = [
-  "Estaciones de tren (candidata F42)",
-  "Favelas, sin campos sensibles (F32)",
-  "Equipamientos deportivos (F33, F34)",
-  "Escuelas (F39, F40)",
-  "Densidad por sector censal (F41, requiere PMTiles)",
-];
-const INICIALES = {
-  metro: true,
-  tren: true,
-  estaciones: true,
-  red_bus: false,
-  paradas: false,
-  distritos: false,
-  subprefeituras: false,
-};
+const CAPAS_PENDIENTES = ["Estaciones de tren CPTM (no están en el catálogo)", "Densidad por sector censal (F41)"];
+const INICIALES: Record<string, boolean> = { metro: true, tren: true, estaciones: true };
+
+function circulo(color: string, radio = 4) {
+  return {
+    "circle-radius": ["interpolate", ["linear"], ["zoom"], 11, radio * 0.6, 16, radio * 1.5],
+    "circle-color": color,
+    "circle-stroke-color": "#ffffff",
+    "circle-stroke-width": 1,
+  } as LayerSpecification["paint"];
+}
+
+// Las celdas a más de este número de celdas del centro no se bajan: con el mapa inclinado,
+// el horizonte llega lejos y casi no se ve lo que hay allí.
+const RADIO_CELDAS = 2;
+
+/** Celdas que tocan la vista, sin pasar de RADIO_CELDAS alrededor del centro. */
+function celdasVisibles(m: MapaML, tamano: number): string[] {
+  const b = m.getBounds();
+  const c = m.getCenter();
+  const [cx, cy] = [Math.floor(c.lng / tamano), Math.floor(c.lat / tamano)];
+  const rango = (desde: number, hasta: number, centro: number) => {
+    const valores: number[] = [];
+    for (let v = Math.max(desde, centro - RADIO_CELDAS); v <= Math.min(hasta, centro + RADIO_CELDAS); v++) {
+      valores.push(v);
+    }
+    return valores;
+  };
+  const xs = rango(Math.floor(b.getWest() / tamano), Math.floor(b.getEast() / tamano), cx);
+  const ys = rango(Math.floor(b.getSouth() / tamano), Math.floor(b.getNorth() / tamano), cy);
+  return xs.flatMap((x) => ys.map((y) => `${x}_${y}`));
+}
 
 const COLOR_BORDE_MUNICIPIO = { claro: "#52514e", oscuro: "#c3c2b7" };
 
@@ -200,6 +278,8 @@ export default function Mapa3D() {
   const [mapa, setMapa] = useState<MapaML | null>(null);
   const [visibles, setVisibles] = useState<Record<string, boolean>>(INICIALES);
   const [estados, setEstados] = useState<Record<string, EstadoCapa>>({});
+  // Celdas ya bajadas por capa. Se vacía al recrear el mapa, porque las fuentes se pierden.
+  const celdas = useRef(new Map<string, { cargadas: Set<string>; features: Feature[] }>());
 
   // Crea el mapa. Al cambiar de tema se vuelve a crear con el otro estilo, en la misma posición.
   useEffect(() => {
@@ -217,6 +297,7 @@ export default function Mapa3D() {
         attributionControl: { compact: true },
       });
       creado = m;
+      celdas.current = new Map();
       m.addControl(new NavigationControl({ visualizePitch: true }), "top-right");
       registrarPopups(m);
       m.on("moveend", () => {
@@ -235,7 +316,7 @@ export default function Mapa3D() {
     };
   }, [tema]);
 
-  // Enciende o apaga capas; la primera vez que se enciende una, baja su archivo.
+  // Enciende o apaga capas; la primera vez que se enciende una, baja su archivo (o sus celdas).
   useEffect(() => {
     if (!mapa) return;
     let vigente = true;
@@ -243,31 +324,76 @@ export default function Mapa3D() {
     const marcar = (id: string, estado: EstadoCapa | null) =>
       setEstados(({ [id]: _anterior, ...resto }) => (estado ? { ...resto, [id]: estado } : resto));
 
+    const agregarFuente = (capa: Capa, datos: FeatureCollection) => {
+      mapa.addSource(capa.id, { type: "geojson", data: datos });
+      for (const sub of capa.capas) mapa.addLayer({ ...sub, source: capa.id } as LayerSpecification);
+    };
+
     const agregarCapa = (capa: Capa) => {
+      if (!capa.archivo) return;
       marcar(capa.id, "cargando");
       cargar<FeatureCollection>(capa.archivo)
         .then((datos) => {
           marcar(capa.id, null);
           // Si el mapa se recreó o la capa ya está, la siguiente pasada del efecto se encarga.
           if (!vigente || mapa.getSource(capa.id)) return;
-          mapa.addSource(capa.id, { type: "geojson", data: datos });
-          for (const sub of capa.capas) mapa.addLayer({ ...sub, source: capa.id } as LayerSpecification);
+          agregarFuente(capa, datos);
         })
         .catch(() => marcar(capa.id, "error"));
+    };
+
+    // Baja las celdas cercanas que falten y las suma a lo que ya tiene la fuente.
+    const actualizarCeldas = () => {
+      for (const capa of CAPAS) {
+        if (!capa.celdas || !visibles[capa.id] || mapa.getZoom() < capa.celdas.desdeZoom) continue;
+        const { carpeta } = capa.celdas;
+        const estado = celdas.current.get(capa.id) ?? { cargadas: new Set<string>(), features: [] };
+        celdas.current.set(capa.id, estado);
+        cargar<IndiceCeldas>(`${carpeta}/indice.json`)
+          .then((indice) => {
+            const existentes = new Set(indice.celdas);
+            const nuevas = celdasVisibles(mapa, indice.tamano_celda).filter(
+              (c) => existentes.has(c) && !estado.cargadas.has(c),
+            );
+            if (!nuevas.length) return;
+            for (const c of nuevas) estado.cargadas.add(c);
+            marcar(capa.id, "cargando");
+            return Promise.all(nuevas.map((c) => cargar<FeatureCollection>(`${carpeta}/${c}.geojson`))).then(
+              (partes) => {
+                marcar(capa.id, null);
+                // Si el mapa se recreó (cambio de tema), este estado ya no es el suyo.
+                if (celdas.current.get(capa.id) !== estado) return;
+                for (const parte of partes) estado.features.push(...parte.features);
+                (mapa.getSource(capa.id) as GeoJSONSource | undefined)?.setData({
+                  type: "FeatureCollection",
+                  features: estado.features,
+                });
+              },
+            );
+          })
+          .catch(() => marcar(capa.id, "error"));
+      }
     };
 
     for (const capa of CAPAS) {
       const visible = visibles[capa.id] ?? false;
       if (mapa.getSource(capa.id)) {
         for (const sub of capa.capas) mapa.setLayoutProperty(sub.id, "visibility", visible ? "visible" : "none");
+      } else if (visible && capa.celdas) {
+        agregarFuente(capa, { type: "FeatureCollection", features: [] });
       } else if (visible) {
         agregarCapa(capa);
       }
     }
+    actualizarCeldas();
+    mapa.on("moveend", actualizarCeldas);
     return () => {
       vigente = false;
+      mapa.off("moveend", actualizarCeldas);
     };
   }, [mapa, visibles]);
+
+  const conCeldas = CAPAS.filter((c) => c.celdas && visibles[c.id]);
 
   return (
     <section className="seccion">
@@ -302,7 +428,11 @@ export default function Mapa3D() {
               <span className="capa-fuente">{ESTADO_VISIBLE[estados[c.id]] ?? c.fuente}</span>
             </label>
           ))}
-          {visibles.paradas && <p className="capas-nota">Las paradas aparecen al acercarse.</p>}
+          {conCeldas.length > 0 && (
+            <p className="capas-nota">
+              {conCeldas.map((c) => c.titulo).join(" y ")}: aparecen al acercarse y se cargan solo por la zona que ves.
+            </p>
+          )}
           {(visibles.metro || visibles.tren) && (
             <ul className="leyenda-lineas" aria-label="Líneas de metro y tren">
               {Object.entries(LINEAS).map(([codigo, l]) => (
@@ -322,10 +452,12 @@ export default function Mapa3D() {
         </div>
       </div>
       <p className="nota">
-        La altura de los edificios es la de OpenStreetMap, no la del LiDAR de la Prefeitura (fuera del lago en v1).
-        Muchos edificios no tienen altura registrada y aparecen con una altura por defecto. La red de bus es la unión de
-        los 2.326 recorridos (F29): cada calle se dibuja una vez aunque pasen varias líneas. GeoSampa publica sus capas
-        bajo CC BY-SA en el portal; se atribuyen aquí aunque algunas fichas digan «no declara».
+        La altura de los edificios es la de OpenStreetMap (etiqueta de altura o número de pisos × 3,66 m), no la del
+        LiDAR de la Prefeitura, que está fuera del lago. Los que no tienen ninguno de los dos datos aparecen con 5 m: en
+        una muestra de octubre de 2026 eran cerca del 10 % de los edificios alrededor de la Paulista y el 20 % en Capão
+        Redondo. La red de bus es la unión de los 2.326 recorridos (F29): cada calle se dibuja una vez aunque pasen
+        varias líneas. GeoSampa publica sus capas bajo CC BY-SA en el portal; se atribuyen aquí aunque algunas fichas
+        digan «no declara».
       </p>
     </section>
   );
