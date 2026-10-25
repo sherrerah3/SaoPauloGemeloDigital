@@ -88,6 +88,7 @@ export function claveIndicador(i: Indicador): string {
 
 const formatoEntero = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 0 });
 const formatoDecimal = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 2 });
+const formatoUnDecimal = new Intl.NumberFormat("es-CO", { maximumFractionDigits: 1 });
 
 export function formatear(valor: number | null, unidad = ""): string {
   if (valor === null || Number.isNaN(valor)) return "Sin dato";
@@ -97,6 +98,31 @@ export function formatear(valor: number | null, unidad = ""): string {
 
 export function formatearCorto(valor: number): string {
   if (Math.abs(valor) >= 1_000_000) return `${formatoDecimal.format(valor / 1_000_000)} M`;
-  if (Math.abs(valor) >= 1_000) return `${formatoEntero.format(valor / 1_000)} mil`;
+  // Con un decimal: entre 1.000 y 10.000, «1 mil» y «2 mil» se repetirían en los ejes.
+  if (Math.abs(valor) >= 1_000) return `${formatoUnDecimal.format(valor / 1_000)} mil`;
   return formatoDecimal.format(valor);
+}
+
+export interface MetricaPorTerritorio {
+  /** Valor por código, para colorear el mapa. */
+  valores: Record<string, number | null>;
+  /** Los que tienen cifra, ordenados para el ranking. */
+  ranking: (Indicador & { valor: number })[];
+  unidad: string;
+}
+
+/** Los indicadores de una clave en un nivel, listos para mapa y ranking. */
+export function metricaPorTerritorio(
+  datos: Indicador[],
+  clave: string,
+  orden: "asc" | "desc" = "desc",
+  nivel: Nivel = "distrito",
+): MetricaPorTerritorio {
+  const filas = datos.filter((i) => i.nivel === nivel && claveIndicador(i) === clave);
+  const ranking = filas.filter(tieneValor).sort((a, b) => (orden === "asc" ? a.valor - b.valor : b.valor - a.valor));
+  return {
+    valores: Object.fromEntries(filas.map((i) => [i.codigo_territorio, i.valor])),
+    ranking,
+    unidad: filas[0]?.unidad ?? "",
+  };
 }

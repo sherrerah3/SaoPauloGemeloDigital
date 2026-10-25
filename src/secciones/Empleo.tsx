@@ -3,6 +3,7 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
+  LabelList,
   Line,
   LineChart,
   ReferenceLine,
@@ -12,7 +13,9 @@ import {
   YAxis,
 } from "recharts";
 import CodigoPregunta from "../componentes/CodigoPregunta";
+import { EJE, ESTILO_TOOLTIP, SERIE_1 } from "../componentes/graficos";
 import MapaDistritos from "../componentes/MapaDistritos";
+import RankingDistritos from "../componentes/RankingDistritos";
 import TarjetaIndicador from "../componentes/TarjetaIndicador";
 import {
   type ArchivoIndicadores,
@@ -22,18 +25,40 @@ import {
   formatearCorto,
   type Indicador,
   type IndiceSeccion,
+  metricaPorTerritorio,
   tieneValor,
 } from "../datos";
 import { useParametro } from "../rutas";
 
-const METRICAS = [
-  { clave: "empleos_formales", etiqueta: "Empleos formales" },
-  { clave: "empleos_formales_participacion", etiqueta: "Participación en el municipio" },
-  { clave: "empleos_formales_por_km2", etiqueta: "Empleos por km²" },
-  { clave: "establecimientos_formales", etiqueta: "Establecimientos formales" },
-] as const;
+// «anios» limita los años: el empleo por sexo existe desde 2022 y por raza o color desde 2023.
+// «municipal» indica si el municipio tiene la cifra (la participación y la densidad no).
+const METRICAS: { clave: string; etiqueta: string; anios?: string[]; municipal: boolean }[] = [
+  { clave: "empleos_formales", etiqueta: "Empleos formales", municipal: true },
+  { clave: "empleos_formales_participacion", etiqueta: "Participación en el municipio", municipal: false },
+  { clave: "empleos_formales_por_km2", etiqueta: "Empleos por km²", municipal: false },
+  { clave: "establecimientos_formales", etiqueta: "Establecimientos formales", municipal: true },
+  {
+    clave: "empleos_femenino_pct",
+    etiqueta: "Empleos ocupados por mujeres",
+    anios: ["2022", "2023", "2024"],
+    municipal: true,
+  },
+  {
+    clave: "empleos_raza_preta_parda_pct",
+    etiqueta: "Empleos de personas pretas o pardas",
+    anios: ["2023", "2024"],
+    municipal: true,
+  },
+];
 
-const AZUL = "var(--serie-1)";
+const RAZAS = [
+  { clave: "branca", etiqueta: "Blanca" },
+  { clave: "parda", etiqueta: "Parda" },
+  { clave: "preta", etiqueta: "Preta" },
+  { clave: "amarela", etiqueta: "Amarilla" },
+  { clave: "indigena", etiqueta: "Indígena" },
+  { clave: "nao_identificada", etiqueta: "No identificada" },
+];
 
 export default function Empleo() {
   const [indice, setIndice] = useState<IndiceSeccion>();
@@ -42,15 +67,16 @@ export default function Empleo() {
   const [metricaUrl, setMetrica] = useParametro("metrica");
   const [distrito, setDistrito] = useParametro("distrito");
   const [serie, setSerie] = useState<Indicador[]>([]);
-  const [verTabla, setVerTabla] = useState(false);
 
   useEffect(() => {
     cargar<IndiceSeccion>("indicadores/empleo/indice.json").then(setIndice);
   }, []);
 
   // Lo que viene en la URL se valida; si no sirve, se usa el valor por defecto.
-  const anio = anioUrl && indice?.anios.includes(anioUrl) ? anioUrl : indice?.anios.at(-1);
-  const metrica = METRICAS.find((m) => m.clave === metricaUrl)?.clave ?? "empleos_formales";
+  const def = METRICAS.find((m) => m.clave === metricaUrl) ?? METRICAS[0];
+  const metrica = def.clave;
+  const anios = def.anios ?? indice?.anios ?? [];
+  const anio = anioUrl && anios.includes(anioUrl) ? anioUrl : anios.at(-1);
 
   useEffect(() => {
     if (!anio) return;
@@ -62,30 +88,22 @@ export default function Empleo() {
     cargar<ArchivoIndicadores>(`indicadores/empleo/${ruta}.json`).then((a) => setSerie(a.indicadores));
   }, [distrito]);
 
-  const delDistrito = useMemo(
-    () => datosAnio.filter((i) => i.nivel === "distrito" && claveIndicador(i) === metrica),
-    [datosAnio, metrica],
-  );
-  const valores = useMemo(
-    () => Object.fromEntries(delDistrito.map((i) => [i.codigo_territorio, i.valor])),
-    [delDistrito],
-  );
-  const ranking = useMemo(() => delDistrito.filter(tieneValor).sort((a, b) => b.valor - a.valor), [delDistrito]);
-  const unidad = delDistrito[0]?.unidad ?? "";
-  const etiquetaMetrica = METRICAS.find((m) => m.clave === metrica)!.etiqueta;
+  const { valores, ranking, unidad } = useMemo(() => metricaPorTerritorio(datosAnio, metrica), [datosAnio, metrica]);
 
   const territorio = distrito ?? "MSP";
   const busca = (clave: string) =>
     datosAnio.find((i) => i.codigo_territorio === territorio && claveIndicador(i) === clave);
   const nombreTerritorio = busca("empleos_formales")?.nombre_territorio ?? "Município de São Paulo";
 
-  // El municipio no tiene participación ni densidad: su serie usa el total de empleos.
-  const metricaSerie = distrito || metrica === "establecimientos_formales" ? metrica : "empleos_formales";
-  const etiquetaSerie = METRICAS.find((m) => m.clave === metricaSerie)!.etiqueta;
+  const defSerie = distrito || def.municipal ? def : METRICAS[0];
   const serieMetrica = serie
-    .filter((i) => claveIndicador(i) === metricaSerie)
+    .filter((i) => claveIndicador(i) === defSerie.clave)
     .map((i) => ({ anio: i.vigencia, valor: i.valor }));
-  const unidadSerie = serie.find((i) => claveIndicador(i) === metricaSerie)?.unidad;
+  const unidadSerie = serie.find((i) => claveIndicador(i) === defSerie.clave)?.unidad;
+  const periodoSerie = serieMetrica.length ? `${serieMetrica[0].anio}-${serieMetrica.at(-1)?.anio}` : "";
+
+  const razas = RAZAS.map((r) => ({ ...r, indicador: busca(`empleos_raza_${r.clave}_pct`) }));
+  const hayRaza = razas.some((r) => r.indicador);
 
   return (
     <section className="seccion">
@@ -104,14 +122,14 @@ export default function Empleo() {
         <label>
           Año
           <select value={anio} onChange={(e) => setAnio(e.target.value)}>
-            {indice?.anios.map((a) => (
+            {anios.map((a) => (
               <option key={a}>{a}</option>
             ))}
           </select>
         </label>
         <label>
           Indicador
-          <select value={metrica} onChange={(e) => setMetrica(e.target.value as typeof metrica)}>
+          <select value={metrica} onChange={(e) => setMetrica(e.target.value)}>
             {METRICAS.map((m) => (
               <option key={m.clave} value={m.clave}>
                 {m.etiqueta}
@@ -142,108 +160,97 @@ export default function Empleo() {
             indicador={busca("empleos_formales_participacion")}
           />
         )}
+        {busca("empleos_femenino_pct") && (
+          <TarjetaIndicador titulo="Empleos ocupados por mujeres" indicador={busca("empleos_femenino_pct")} />
+        )}
       </div>
 
       <div className="rejilla-dos">
         <div className="panel">
           <h2>
-            {etiquetaMetrica} por distrito, {anio}
+            {def.etiqueta} por distrito, {anio}
           </h2>
           <MapaDistritos valores={valores} unidad={unidad} seleccionado={distrito} onSeleccionar={setDistrito} />
         </div>
 
-        <div className="panel">
-          <div className="panel-cabecera">
-            <h2>Los 10 distritos con más {etiquetaMetrica.toLowerCase()}</h2>
-            <button type="button" className="enlace" onClick={() => setVerTabla((v) => !v)}>
-              {verTabla ? "Ver gráfico" : "Ver tabla de los 96"}
-            </button>
-          </div>
-          {verTabla ? (
-            <div className="tabla-scroll">
-              <table>
-                <thead>
-                  <tr>
-                    <th>#</th>
-                    <th>Distrito</th>
-                    <th className="num">{unidad}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ranking.map((i, n) => (
-                    <tr key={i.id} className={i.codigo_territorio === distrito ? "fila-activa" : ""}>
-                      <td>{n + 1}</td>
-                      <td>
-                        <button type="button" className="enlace" onClick={() => setDistrito(i.codigo_territorio)}>
-                          {i.nombre_territorio}
-                        </button>
-                      </td>
-                      <td className="num">{formatear(i.valor, i.unidad)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          ) : (
-            <ResponsiveContainer width="100%" height={360}>
-              <BarChart
-                data={ranking
-                  .slice(0, 10)
-                  .map((i) => ({ nombre: i.nombre_territorio, valor: i.valor, codigo: i.codigo_territorio }))}
-                layout="vertical"
-                margin={{ left: 8, right: 16 }}
-                barCategoryGap={4}
-              >
-                <CartesianGrid horizontal={false} stroke="var(--grilla)" />
-                <XAxis type="number" tickFormatter={formatearCorto} stroke="var(--texto-tenue)" fontSize={12} />
-                <YAxis type="category" dataKey="nombre" width={120} stroke="var(--texto-tenue)" fontSize={12} />
-                <Tooltip
-                  cursor={{ fill: "var(--superficie-2)" }}
-                  formatter={(v) => [formatear(Number(v), unidad), unidad]}
-                  contentStyle={{ background: "var(--superficie)", border: "1px solid var(--borde)", borderRadius: 8 }}
-                  itemStyle={{ color: "var(--texto)" }}
-                  labelStyle={{ color: "var(--texto-2)" }}
-                />
-                <Bar
-                  dataKey="valor"
-                  fill={AZUL}
-                  radius={[0, 4, 4, 0]}
-                  onClick={(d) => setDistrito((d as unknown as { codigo: string }).codigo)}
-                  style={{ cursor: "pointer" }}
-                />
-              </BarChart>
-            </ResponsiveContainer>
-          )}
+        <RankingDistritos
+          titulo={`Los 10 distritos con más ${def.etiqueta.toLowerCase()}`}
+          ranking={ranking}
+          unidad={unidad}
+          seleccionado={distrito}
+          onSeleccionar={setDistrito}
+        >
           <p className="nota">Excluye las filas «inválidos» y «no localizados», que se conservan en el lago.</p>
-        </div>
+        </RankingDistritos>
       </div>
+
+      {hayRaza && (
+        <div className="panel">
+          <h2>
+            Empleos por raza o color en {nombreTerritorio}, {anio}
+          </h2>
+          <ResponsiveContainer width="100%" height={240}>
+            <BarChart
+              data={razas
+                .filter((r) => r.indicador && tieneValor(r.indicador))
+                .map((r) => ({
+                  nombre: r.etiqueta,
+                  valor: r.indicador?.valor,
+                }))}
+              layout="vertical"
+              margin={{ left: 8, right: 48 }}
+              barCategoryGap={4}
+            >
+              <CartesianGrid horizontal={false} stroke="var(--grilla)" />
+              <XAxis type="number" unit=" %" {...EJE} />
+              <YAxis type="category" dataKey="nombre" width={110} {...EJE} />
+              <Tooltip
+                cursor={{ fill: "var(--superficie-2)" }}
+                formatter={(v) => [formatear(Number(v), "%"), "De los empleos"]}
+                {...ESTILO_TOOLTIP}
+              />
+              <Bar dataKey="valor" fill={SERIE_1} radius={[0, 4, 4, 0]}>
+                <LabelList
+                  dataKey="valor"
+                  position="right"
+                  formatter={(v: unknown) => formatear(Number(v), "%")}
+                  style={{ fill: "var(--texto-2)", fontSize: 12 }}
+                />
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+          <p className="nota">
+            Fuente {razas.find((r) => r.indicador)?.indicador?.fuente_id} (RAIS vía Infocidade). Raza o color es un dato
+            sensible: solo se publica como porcentaje, y una categoría con menos de 10 empleos no se muestra. En 2023,
+            el 10,8 % de los empleos del municipio no tenía raza o color registrada; en 2024, el 2,4 %.
+          </p>
+        </div>
+      )}
 
       <div className="panel">
         <h2>
-          {etiquetaSerie} en {nombreTerritorio}, 2011-2024
+          {defSerie.etiqueta} en {nombreTerritorio}, {periodoSerie}
         </h2>
         <ResponsiveContainer width="100%" height={260}>
           <LineChart data={serieMetrica} margin={{ left: 8, right: 16, top: 8 }}>
             <CartesianGrid vertical={false} stroke="var(--grilla)" />
-            <XAxis dataKey="anio" stroke="var(--texto-tenue)" fontSize={12} />
-            <YAxis tickFormatter={formatearCorto} stroke="var(--texto-tenue)" fontSize={12} width={60} />
-            <ReferenceLine
-              x="2022"
-              stroke="var(--texto-tenue)"
-              strokeDasharray="4 4"
-              label={{ value: "Quiebre RAIS", fontSize: 11, fill: "var(--texto-tenue)", position: "insideTopLeft" }}
-            />
-            <Tooltip
-              formatter={(v) => [formatear(Number(v), unidadSerie), etiquetaSerie]}
-              contentStyle={{ background: "var(--superficie)", border: "1px solid var(--borde)", borderRadius: 8 }}
-              itemStyle={{ color: "var(--texto)" }}
-              labelStyle={{ color: "var(--texto-2)" }}
-            />
+            <XAxis dataKey="anio" {...EJE} />
+            <YAxis tickFormatter={formatearCorto} width={60} {...EJE} />
+            {/* El quiebre solo se marca si la serie empieza antes: en sexo y raza es su primer año. */}
+            {serieMetrica[0]?.anio < "2022" && (
+              <ReferenceLine
+                x="2022"
+                stroke="var(--texto-tenue)"
+                strokeDasharray="4 4"
+                label={{ value: "Quiebre RAIS", fontSize: 11, fill: "var(--texto-tenue)", position: "insideTopLeft" }}
+              />
+            )}
+            <Tooltip formatter={(v) => [formatear(Number(v), unidadSerie), defSerie.etiqueta]} {...ESTILO_TOOLTIP} />
             <Line
               dataKey="valor"
-              stroke={AZUL}
+              stroke={SERIE_1}
               strokeWidth={2}
-              dot={{ r: 4, fill: AZUL, strokeWidth: 2, stroke: "var(--superficie)" }}
+              dot={{ r: 4, fill: SERIE_1, strokeWidth: 2, stroke: "var(--superficie)" }}
             />
           </LineChart>
         </ResponsiveContainer>
@@ -254,9 +261,8 @@ export default function Empleo() {
       </div>
 
       <aside className="limitacion">
-        <strong>Lo que esta sección no muestra todavía:</strong> empleo por sexo (F13-F15), por raza o color (F16-F17,
-        solo como porcentaje), centros comerciales (F22-F24) y área residencial (F28). El lago no tiene empleo por
-        sector económico.
+        <strong>Lo que esta sección no muestra todavía:</strong> empleo por sector económico (no está en el lago). El
+        empleo por sexo cubre 2022-2024 (F13-F15) y por raza o color 2023-2024 (F16-F17).
       </aside>
     </section>
   );

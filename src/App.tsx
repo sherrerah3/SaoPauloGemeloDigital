@@ -10,7 +10,9 @@ import Pendiente from "./secciones/Pendiente";
 import { TemaContexto, useTemaRaiz } from "./tema";
 
 // MapLibre y Recharts pesan: solo se bajan al abrir una sección que los usa.
+const Ambiente = lazy(() => import("./secciones/Ambiente"));
 const Empleo = lazy(() => import("./secciones/Empleo"));
+const Gente = lazy(() => import("./secciones/Gente"));
 const Mapa3D = lazy(() => import("./secciones/Mapa3D"));
 const Transporte = lazy(() => import("./secciones/Transporte"));
 
@@ -88,6 +90,8 @@ export default function App() {
             {seccion.id === "mapa" && <Mapa3D />}
             {seccion.id === "empleo" && <Empleo />}
             {seccion.id === "transporte" && <Transporte />}
+            {seccion.id === "gente" && <Gente />}
+            {seccion.id === "ambiente" && <Ambiente />}
             {seccion.id === "fuentes" && <Fuentes />}
             {seccion.id === "no-cubrimos" && <NoCubrimos />}
             {!seccion.lista && <Pendiente seccion={seccion} />}
@@ -95,8 +99,9 @@ export default function App() {
         </main>
 
         <footer className="pie">
-          Datos: Prefeitura de São Paulo (GeoSampa, Infocidade), IBGE, SPTrans, Wikimedia. Mapa base: OpenFreeMap, ©
-          colaboradores de OpenStreetMap. Cada cifra muestra su fuente y vigencia.
+          Datos: Prefeitura de São Paulo (GeoSampa, Infocidade), IBGE, SPTrans, RAIS, ABRASCE. Mapa base: OpenFreeMap, ©
+          colaboradores de OpenStreetMap. Foto de portada: Raphael Nogueira (Unsplash). Cada cifra muestra su fuente y
+          vigencia.
         </footer>
       </FuentesContexto.Provider>
     </TemaContexto.Provider>

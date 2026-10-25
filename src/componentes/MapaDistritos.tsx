@@ -16,7 +16,18 @@ const COLORES: Record<Tema, { rampa: string[]; sinDato: string; borde: string; s
 
 const NUMERO_CLASES = RAMPA_CLARA.length;
 
+// Capa y código de cada nivel; los distritos son el nivel por defecto.
+const CAPAS = {
+  distrito: { archivo: "territorio/distritos.geojson", codigo: "codigo_distrito", nombre: "distritos" },
+  subprefeitura: {
+    archivo: "territorio/subprefeituras.geojson",
+    codigo: "codigo_subprefeitura",
+    nombre: "subprefeituras",
+  },
+};
+
 interface Props {
+  nivel?: keyof typeof CAPAS;
   valores: Record<string, number | null>;
   unidad: string;
   seleccionado: string | null;
@@ -40,7 +51,8 @@ function colorDeClase(rampa: string[], clase: number, totalClases: number): stri
   return rampa[Math.round((clase * (rampa.length - 1)) / (totalClases - 1))];
 }
 
-export default function MapaDistritos({ valores, unidad, seleccionado, onSeleccionar }: Props) {
+export default function MapaDistritos({ nivel = "distrito", valores, unidad, seleccionado, onSeleccionar }: Props) {
+  const capa = CAPAS[nivel];
   const tema = useTema();
   const colores = COLORES[tema];
   const contenedor = useRef<HTMLDivElement>(null);
@@ -76,8 +88,8 @@ export default function MapaDistritos({ valores, unidad, seleccionado, onSelecci
 
       m.on("load", async () => {
         await agregarMascara(m, seleccion);
-        const geo = await cargar<FeatureCollection>("territorio/distritos.geojson");
-        m.addSource("distritos", { type: "geojson", data: geo, promoteId: "codigo_distrito" });
+        const geo = await cargar<FeatureCollection>(capa.archivo);
+        m.addSource("distritos", { type: "geojson", data: geo, promoteId: capa.codigo });
         m.addLayer({
           id: "distritos-relleno",
           type: "fill",
@@ -110,7 +122,7 @@ export default function MapaDistritos({ valores, unidad, seleccionado, onSelecci
         const f = e.features?.[0];
         if (!f) return;
         const { valores, unidad } = actual.current;
-        const codigo = f.properties.codigo_distrito as string;
+        const codigo = f.properties[capa.codigo] as string;
         m.getCanvas().style.cursor = "pointer";
         popup
           .setLngLat(e.lngLat)
@@ -124,7 +136,7 @@ export default function MapaDistritos({ valores, unidad, seleccionado, onSelecci
         popup.remove();
       });
       m.on("click", "distritos-relleno", (e: MapLayerMouseEvent) => {
-        const codigo = e.features?.[0]?.properties.codigo_distrito;
+        const codigo = e.features?.[0]?.properties[capa.codigo];
         if (codigo) actual.current.onSeleccionar(codigo as string);
       });
     }
@@ -134,7 +146,7 @@ export default function MapaDistritos({ valores, unidad, seleccionado, onSelecci
       setMapa(null);
       creado?.remove();
     };
-  }, [tema]);
+  }, [tema, capa]);
 
   // Pinta valores y selección cada vez que cambian.
   useEffect(() => {
@@ -152,7 +164,12 @@ export default function MapaDistritos({ valores, unidad, seleccionado, onSelecci
   return (
     <figure className="mapa-figura">
       <div className="mapa-contenedor">
-        <div ref={contenedor} className="mapa" role="img" aria-label={`Mapa coroplético de distritos: ${unidad}`} />
+        <div
+          ref={contenedor}
+          className="mapa"
+          role="img"
+          aria-label={`Mapa coroplético de ${capa.nombre}: ${unidad}`}
+        />
         {!mapa && <p className="mapa-cargando">Cargando mapa…</p>}
       </div>
       <figcaption className="leyenda">
