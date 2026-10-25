@@ -8,5 +8,8 @@ xlrd>=2.0
 unidecode>=1.3
 requests>=2.32
 
+# Fotos del sitio (herramientas/fotos_webp.py)
+pillow>=11.0
+
 # Desarrollo: formato y lint de ingesta/ (npm run lint, npm run formato)
 ruff==0.16.10
