@@ -7,6 +7,9 @@ Sitio estático que responde dos preguntas con datos abiertos oficiales:
 
 Todo se procesa antes, en Python. Vercel solo sirve archivos.
 
+- [docs/COMO_FUNCIONA.md](docs/COMO_FUNCIONA.md): cómo va el dato del Excel al navegador, las secciones y el mapa 3D.
+- [docs/FUENTES.md](docs/FUENTES.md): qué fuente del Diccionario se usa, para qué y cuáles quedan por fuera.
+
 ## Estructura
 
 ```
@@ -16,19 +19,24 @@ ingesta/              scripts de Python (se corren en local o en Docker)
   comun.py            reglas de limpieza compartidas (sección 5 del plan) y descarga WFS
   exportar_excel.py   Excel → data/fuentes.csv y data/diccionario.csv
   pull_territorio.py  distritos y subprefeituras desde el WFS de GeoSampa
-  pull_empleo.py      F11, F12 (pendiente: F13-F17, F22-F24, F28)
-  pull_poblacion.py   F41 (pendiente: F01, F08)
+  pull_empleo.py      F11-F17 (empleo, por sexo y por raza o color)
+  pull_poblacion.py   F41 y F28 (pendiente: F01, F08)
   pull_movilidad.py   F29, F30, F31, F35, F36 (GeoSampa) y F05 (pasajeros SPTrans)
+  pull_equipamientos.py  F21-F24 (ferias, shoppings), F33, F34, F39, F40 (GeoSampa) y F32 (favelas)
+  pull_ambiente.py    F25-F27 (cobertura vegetal)
   calculos_p1.py      cobertura de transporte por distrito (P1)
+  calculos_equipamientos.py  equipamientos y favelas por distrito
   build_web.py        lago → public/data/, con el filtro de privacidad
   verificar.py        pruebas; sale con código 1 si algo falla
 data/
   Diccionario_de_datos_TallerDatos.xlsx   catálogo (fuente de verdad)
   raw/                crudos con fecha en el nombre (no se suben a git)
-  lago/               CSV y GeoJSON limpios (GeoJSON en EPSG:31983); densidad_sectores y buses
-                      no se suben (Sensible y >50 MB): se regeneran con `npm run datos`
+  lago/               CSV y GeoJSON limpios (GeoJSON en EPSG:31983); densidad_sectores, favelas y
+                      empleo_raza no se suben (traen campos Sensibles), ni buses (>50 MB): se regeneran
+                      con `npm run datos`
   derivados/          tablas calculadas, para revisar (no son campos del lago)
 public/data/          salida para la web (sí se sube: es lo que sirve Vercel)
+docs/                 cómo funciona el sitio y qué fuentes usa
 src/                  Vite + React + TypeScript
 ```
 
@@ -75,6 +83,18 @@ señalización, tipografía Archivo (ancha en títulos, condensada en rótulos) 
 azul de la línea 1 para P1 y amarillo de la línea 4 para P2. Los filtros de cada sección viven en la URL
 (`#transporte?metrica=paradas_por_km2&distrito=96`), así que cualquier vista se puede compartir.
 
+## Fotos
+
+Las fotos van a `public/fotos/` solo en WebP, en dos anchos (1.600 y 800 px), sin metadatos EXIF. El original
+no se sube. Para agregar una:
+
+```bash
+.venv/bin/python herramientas/fotos_webp.py ../fotos-saopaulo/portada.jpg portada
+```
+
+La foto de portada es de Raphael Nogueira en Unsplash (licencia de Unsplash: uso libre; el crédito va en la
+portada y en el pie).
+
 ## Calidad del código
 
 - **Front:** [Biome](https://biomejs.dev) (`biome.json`), 2 espacios y 120 columnas, imports ordenados.
@@ -117,6 +137,7 @@ Cada indicador en `public/data/indicadores/` trae:
 | `advertencia` | obligatoria cuando el Diccionario la sugiere |
 | `calculo` | solo en indicadores derivados (participación, densidad, cobertura) |
 | `fuentes_adicionales` | otras fuentes que entran en el cálculo (la cobertura usa F41 + F30 + F36) |
+| `transformacion` | solo en campos Sensibles que salen transformados (raza o color: `porcentaje`) |
 
 `codigo_territorio`, `nombre_territorio`, `calculo` y `fuentes_adicionales` amplían el contrato de la
 sección 6 del plan: sin ellos no se sabe a qué distrito pertenece la cifra ni de dónde sale un cálculo.
@@ -124,7 +145,9 @@ sección 6 del plan: sin ellos no se sabe a qué distrito pertenece la cifra ni 
 
 Empleo se publica partido: `anio_<AAAA>.json` (todos los territorios de un año, para el mapa),
 `serie_<nivel>_<código>.json` (todos los años de un territorio) e `indice.json`. Transporte es una foto
-actual: `indicadores/transporte/distritos.json` y `pasajeros.json`, más las capas del mapa en `transporte/`.
+actual: `indicadores/transporte/distritos.json` y `pasajeros.json`, más las capas del mapa en `transporte/`
+(la red de bus y las paradas, partidas en celdas con un `indice.json`). Equipamientos, Gente y Ambiente
+publican `indicadores/<seccion>/*.json` y sus capas en `equipamientos/` y `gente/`.
 
 ## P1: cómo se calcula la cobertura
 
@@ -143,7 +166,8 @@ comprueba que ninguno aparece. Decisión por defecto, pendiente de confirmar por
 
 - `tipo_parto` (F18-F20): no se publica; solo el total de nacidos vivos.
 - `raza_color`, `empleos` (F16-F17): solo como porcentaje, suprimiendo celdas bajo `UMBRAL_SUPRESION`.
-- `nombre`, `ubicacion_texto`, `propiedad_terreno` (F32): no se publican.
+- `ubicacion_texto`, `propiedad_terreno` (F32): no se publican. `nombre` sí, por decisión del equipo
+  (`PUBLICACION_AUTORIZADA` en `config.py`).
 - `indice_vulnerabilidad` (F41): no se publica hasta conocer su escala y definición.
 
 ## Atribución
