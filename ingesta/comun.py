@@ -68,7 +68,12 @@ def url_wfs(capa: str) -> str:
 
 def leer_capa_geosampa(capa: str, nombre_raw: str) -> gpd.GeoDataFrame:
     """Descarga una capa por WFS (o reutiliza el crudo), comprueba EPSG:31983 y repara el texto."""
-    gdf = gpd.read_file(descargar(url_wfs(capa), nombre_raw, "geojson"))
+    ruta = descargar(url_wfs(capa), nombre_raw, "geojson")
+    gdf = gpd.read_file(ruta)
+    if gdf.empty:
+        # Sin features GeoSampa no manda el CRS; se borra el crudo para no reutilizar un archivo vacío.
+        ruta.unlink()
+        raise ValueError(f"{capa}: GeoSampa devolvió la capa vacía. Es un problema del servidor; reintenta más tarde.")
     if gdf.crs is None or gdf.crs.to_epsg() != 31983:
         raise ValueError(f"{capa}: se esperaba EPSG:31983 y llegó {gdf.crs}")
     for col in gdf.columns.drop("geometry"):
