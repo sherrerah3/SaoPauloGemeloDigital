@@ -13,7 +13,7 @@ import {
   Popup,
 } from "../componentes/maplibre";
 import { cargar } from "../datos";
-import { rutaFotoSitio, type Sitio, SITIOS, SITIOS_GEOJSON } from "../sitios";
+import { rutaFotoSitio, SITIOS, SITIOS_GEOJSON, type Sitio } from "../sitios";
 import { useTema } from "../tema";
 
 // Colores oficiales de Metrô y CPTM: el nombre de cada línea es su color, así que se respetan.

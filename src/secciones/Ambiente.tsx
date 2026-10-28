@@ -187,7 +187,9 @@ export default function Ambiente() {
 
       <div className="rejilla-dos">
         <div className="panel">
-          <h2>Temperatura mínima media anual, {serieAnual[0]?.anio}-{serieAnual.at(-1)?.anio}</h2>
+          <h2>
+            Temperatura mínima media anual, {serieAnual[0]?.anio}-{serieAnual.at(-1)?.anio}
+          </h2>
           <ResponsiveContainer width="100%" height={280}>
             <LineChart data={serieAnual} margin={{ left: 8, right: 16, top: 8 }}>
               <CartesianGrid vertical={false} stroke="var(--grilla)" />
