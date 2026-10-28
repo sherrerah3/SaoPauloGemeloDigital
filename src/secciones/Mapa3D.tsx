@@ -4,6 +4,7 @@ import { agregarMascara, estiloSaoPaulo, LIMITES_NAVEGACION } from "../component
 import {
   type CameraOptions,
   type ExpressionSpecification,
+  FullscreenControl,
   type GeoJSONSource,
   type LayerSpecification,
   Map as MapaML,
@@ -12,6 +13,7 @@ import {
   Popup,
 } from "../componentes/maplibre";
 import { cargar } from "../datos";
+import { rutaFotoSitio, type Sitio, SITIOS, SITIOS_GEOJSON } from "../sitios";
 import { useTema } from "../tema";
 
 // Colores oficiales de Metrô y CPTM: el nombre de cada línea es su color, así que se respetan.
@@ -44,6 +46,8 @@ interface Capa {
   muestra: string;
   capas: Omit<LayerSpecification, "source">[];
   popup?: (p: Record<string, unknown>) => string;
+  /** Datos que ya vienen en el código (src/sitios.ts): no hay nada que bajar. */
+  datos?: FeatureCollection;
   /** Un solo archivo, que se baja la primera vez que se enciende la capa. */
   archivo?: string;
   /** O una carpeta partida en celdas (build_web.py): se bajan solo las cercanas, desde este zoom. */
@@ -57,7 +61,63 @@ interface IndiceCeldas {
 
 // Capa B del plan. Se bajan solo cuando se encienden; la red de bus y las paradas, además,
 // solo al acercarse y por zonas (pesan unos 3 y 4 MB en total).
+const COLOR_SITIOS = "#8e44ad";
+const ESTRELLA_SITIO = "estrella-sitio";
+
+/**
+ * Estrella morada de cinco puntas con borde blanco, dibujada en un canvas (no hay archivo de imagen).
+ * Se crea a 48 px y se registra con pixelRatio 2, así se ve nítida en pantallas de alta densidad.
+ */
+function crearEstrella(): ImageData {
+  const lado = 48;
+  const lienzo = document.createElement("canvas");
+  lienzo.width = lienzo.height = lado;
+  const ctx = lienzo.getContext("2d")!;
+  const centro = lado / 2;
+  const radioExterior = lado / 2 - 6; // deja lugar al borde blanco
+  const radioInterior = radioExterior * 0.45;
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const radio = i % 2 === 0 ? radioExterior : radioInterior;
+    const angulo = -Math.PI / 2 + (i * Math.PI) / 5;
+    const [x, y] = [centro + radio * Math.cos(angulo), centro + radio * Math.sin(angulo)];
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.lineJoin = "round";
+  // El borde se dibuja centrado en el contorno y el relleno tapa su mitad interior: queda 2 px de borde.
+  ctx.lineWidth = 8;
+  ctx.strokeStyle = "#ffffff";
+  ctx.stroke();
+  ctx.fillStyle = COLOR_SITIOS;
+  ctx.fill();
+  return ctx.getImageData(0, 0, lado, lado);
+}
+
 const CAPAS: Capa[] = [
+  {
+    id: "sitios",
+    titulo: "Sitios emblemáticos",
+    datos: SITIOS_GEOJSON,
+    fuente: "Commons",
+    muestra: COLOR_SITIOS,
+    // Sin `popup`: su globo con foto se abre al pasar el mouse (registrarSitios).
+    capas: [
+      {
+        id: "sitios",
+        type: "symbol",
+        layout: {
+          "icon-image": ESTRELLA_SITIO,
+          // Más chica al alejarse, para que no tape lo que está cerca; a zoom 14 mide unos 19 px.
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 10, 0.55, 14, 0.8, 17, 1.1],
+          // Siempre visible y por encima del resto: las estrellas no compiten con los rótulos del mapa base.
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
+        },
+      },
+    ],
+  },
   {
     id: "metro",
     titulo: "Metro",
@@ -210,7 +270,7 @@ const CAPAS: Capa[] = [
   },
 ];
 const CAPAS_PENDIENTES = ["Estaciones de tren CPTM (no están en el catálogo)", "Densidad por sector censal (F41)"];
-const INICIALES: Record<string, boolean> = { metro: true, tren: true, estaciones: true };
+const INICIALES: Record<string, boolean> = { sitios: true, metro: true, tren: true, estaciones: true };
 
 function circulo(color: string, radio = 4) {
   return {
@@ -250,8 +310,106 @@ const CAMARA_INICIAL: CameraOptions = { center: [-46.6555, -23.5613], zoom: 14.2
 type EstadoCapa = "cargando" | "error";
 const ESTADO_VISIBLE: Record<string, string> = { cargando: "…", error: "sin datos" };
 
+// Medidas aproximadas del globo: la caja (foto de 160 px, tres líneas de texto y relleno) y lo que
+// ocupan la flecha y la separación del punto.
+const ALTO_CAJA_GLOBO_PX = 240;
+const ANCHO_CAJA_GLOBO_PX = 252;
+const SEPARACION_GLOBO_PX = 26;
+
+type AnclajeGlobo = "bottom" | "top" | "left" | "right";
+
+/**
+ * Dónde abrir el globo para que se corte lo menos posible contra los bordes del mapa.
+ * "bottom" lo deja encima del punto, "top" debajo, "left" a la derecha y "right" a la izquierda.
+ * Para cada opción se mide cuántos píxeles se saldrían; gana la que menos, y a igualdad
+ * (sobre todo cuando cabe) se prefiere encima del punto.
+ */
+function anclajeGlobo(m: MapaML, punto: { x: number; y: number }): AnclajeGlobo {
+  const { clientWidth: ancho, clientHeight: alto } = m.getContainer();
+  const arriba = punto.y;
+  const abajo = alto - punto.y;
+  const vertical = ALTO_CAJA_GLOBO_PX + SEPARACION_GLOBO_PX;
+  const horizontal = ANCHO_CAJA_GLOBO_PX + SEPARACION_GLOBO_PX;
+  // Al costado el globo queda centrado en el punto: necesita media caja arriba y media abajo.
+  const mediaCaja = ALTO_CAJA_GLOBO_PX / 2;
+  const cortesLaterales = Math.max(mediaCaja - arriba, mediaCaja - abajo);
+  const opciones: [AnclajeGlobo, number][] = [
+    ["bottom", vertical - arriba],
+    ["top", vertical - abajo],
+    ["left", Math.max(cortesLaterales, horizontal - (ancho - punto.x))],
+    ["right", Math.max(cortesLaterales, horizontal - punto.x)],
+  ];
+  let mejor = opciones[0];
+  for (const opcion of opciones) if (Math.max(0, opcion[1]) < Math.max(0, mejor[1])) mejor = opcion;
+  return mejor[0];
+}
+
+/** Contenido del globo: foto, nombre, zona y crédito. Se arma con el DOM (sin HTML en texto). */
+function contenidoSitio(s: Sitio): HTMLElement {
+  const caja = document.createElement("div");
+  caja.className = "globo-sitio";
+  const foto = document.createElement("img");
+  foto.src = rutaFotoSitio(s.id);
+  foto.alt = `Foto de ${s.nombre}`;
+  foto.width = 240;
+  foto.height = 160;
+  const nombre = document.createElement("strong");
+  nombre.textContent = s.nombre;
+  const zona = document.createElement("span");
+  zona.className = "popup-unidad";
+  zona.textContent = s.zona;
+  const credito = document.createElement("span");
+  credito.className = "globo-credito";
+  credito.textContent = `Foto: ${s.autor}, ${s.licencia}`;
+  caja.append(foto, nombre, zona, credito);
+  return caja;
+}
+
+/** Globo con la foto de un sitio emblemático: aparece al pasar el mouse (y al tocar, en pantallas táctiles). */
+function registrarSitios(m: MapaML) {
+  let globo: Popup | null = null;
+  const cerrar = () => {
+    globo?.remove();
+    globo = null;
+  };
+  const mostrar = (e: MapLayerMouseEvent) => {
+    const sitio = SITIOS.find((s) => s.id === e.features?.[0]?.properties?.id);
+    if (!sitio) return;
+    cerrar();
+    // Lo normal es que el globo quede encima del punto, con la flecha hacia abajo. Si ahí se cortaría,
+    // se abre en el lado donde menos se corte (debajo solo si de verdad cabe mejor).
+    globo = new Popup({
+      closeButton: false,
+      closeOnClick: false,
+      anchor: anclajeGlobo(m, m.project(sitio.coordenadas)),
+      offset: 16,
+      maxWidth: "260px",
+      className: "popup-sitio",
+    })
+      .setLngLat(sitio.coordenadas)
+      .setDOMContent(contenidoSitio(sitio))
+      .addTo(m);
+  };
+  m.on("mouseenter", "sitios", (e: MapLayerMouseEvent) => {
+    m.getCanvas().style.cursor = "pointer";
+    mostrar(e);
+  });
+  m.on("mouseleave", "sitios", () => {
+    m.getCanvas().style.cursor = "";
+    cerrar();
+  });
+  m.on("click", "sitios", mostrar);
+  // En pantallas táctiles no hay "mouseleave": un toque en otro lado cierra el globo.
+  m.on("click", (e) => {
+    if (!m.getLayer("sitios") || !m.queryRenderedFeatures(e.point, { layers: ["sitios"] }).length) cerrar();
+  });
+  // Se piden las fotos de antemano para que el globo salga completo desde el primer paso del mouse.
+  for (const s of SITIOS) new Image().src = rutaFotoSitio(s.id);
+}
+
 /** Un popup compartido: clic en cualquier capa que tenga `popup` muestra sus datos. */
 function registrarPopups(m: MapaML) {
+  registrarSitios(m);
   const popup = new Popup({ closeButton: false, offset: 8 });
   for (const capa of CAPAS) {
     if (!capa.popup) continue;
@@ -274,6 +432,8 @@ function registrarPopups(m: MapaML) {
 export default function Mapa3D() {
   const tema = useTema();
   const contenedor = useRef<HTMLDivElement>(null);
+  // Lo que pasa a pantalla completa: el mapa y el panel de capas juntos.
+  const envoltorio = useRef<HTMLDivElement>(null);
   const camara = useRef<CameraOptions>(CAMARA_INICIAL);
   const [mapa, setMapa] = useState<MapaML | null>(null);
   const [visibles, setVisibles] = useState<Record<string, boolean>>(INICIALES);
@@ -295,15 +455,22 @@ export default function Mapa3D() {
         minZoom: 9,
         maxBounds: LIMITES_NAVEGACION,
         attributionControl: { compact: true },
+        locale: {
+          "FullscreenControl.Enter": "Ver en pantalla completa",
+          "FullscreenControl.Exit": "Salir de pantalla completa",
+        },
       });
       creado = m;
       celdas.current = new Map();
       m.addControl(new NavigationControl({ visualizePitch: true }), "top-right");
+      m.addControl(new FullscreenControl({ container: envoltorio.current! }), "top-right");
       registrarPopups(m);
       m.on("moveend", () => {
         camara.current = { center: m.getCenter(), zoom: m.getZoom(), pitch: m.getPitch(), bearing: m.getBearing() };
       });
       m.on("load", async () => {
+        // Las imágenes se pierden al recrear el mapa (cambio de tema): se registran en cada carga.
+        if (!m.hasImage(ESTRELLA_SITIO)) m.addImage(ESTRELLA_SITIO, crearEstrella(), { pixelRatio: 2 });
         await agregarMascara(m, COLOR_BORDE_MUNICIPIO[tema]);
         setMapa(m);
       });
@@ -327,9 +494,12 @@ export default function Mapa3D() {
     const agregarFuente = (capa: Capa, datos: FeatureCollection) => {
       mapa.addSource(capa.id, { type: "geojson", data: datos });
       for (const sub of capa.capas) mapa.addLayer({ ...sub, source: capa.id } as LayerSpecification);
+      // Los sitios van siempre encima, para que ninguna línea tape el punto donde se pasa el mouse.
+      if (capa.id !== "sitios" && mapa.getLayer("sitios")) mapa.moveLayer("sitios");
     };
 
     const agregarCapa = (capa: Capa) => {
+      if (capa.datos) return agregarFuente(capa, capa.datos);
       if (!capa.archivo) return;
       marcar(capa.id, "cargando");
       cargar<FeatureCollection>(capa.archivo)
@@ -402,11 +572,11 @@ export default function Mapa3D() {
         <p className="entrada">
           Edificios de OpenStreetMap extruidos sobre el mapa base de OpenFreeMap, con las capas oficiales de GeoSampa
           encima. Arrastra con clic derecho (o dos dedos) para inclinar y girar; haz clic en una línea, estación o
-          parada.
+          parada. Pasa el mouse por una estrella morada para ver la foto de ese sitio emblemático.
         </p>
       </header>
 
-      <div className="mapa-3d-contenedor">
+      <div ref={envoltorio} className="mapa-3d-contenedor">
         <div
           ref={contenedor}
           className="mapa mapa-3d"
@@ -451,6 +621,20 @@ export default function Mapa3D() {
           </ul>
         </div>
       </div>
+      <details className="creditos-fotos">
+        <summary>Sitios emblemáticos y créditos de las fotos</summary>
+        <ul>
+          {SITIOS.map((s) => (
+            <li key={s.id}>
+              <strong>{s.nombre}</strong> ({s.zona}). Foto de {s.autor},{" "}
+              <a href={s.fuente} rel="noreferrer noopener" target="_blank">
+                {s.licencia} en Wikimedia Commons
+              </a>
+              .
+            </li>
+          ))}
+        </ul>
+      </details>
       <p className="nota">
         La altura de los edificios es la de OpenStreetMap (etiqueta de altura o número de pisos × 3,66 m), no la del
         LiDAR de la Prefeitura, que está fuera del lago. Los que no tienen ninguno de los dos datos aparecen con 5 m: en

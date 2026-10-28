@@ -34,7 +34,7 @@ Qué fuente alimenta cada parte está en [FUENTES.md](FUENTES.md).
 | `pull_poblacion.py` | F41, F28 |
 | `pull_movilidad.py` | F05, F29-F31, F35, F36 |
 | `pull_equipamientos.py` | F21-F24, F32-F34, F39, F40 |
-| `pull_ambiente.py` | F25-F27 |
+| `pull_ambiente.py` | F25-F27, F06 |
 
 Todo el pipeline corre con `npm run datos` (o `docker compose run --rm datos`).
 
@@ -70,7 +70,7 @@ Vite, React y TypeScript (`src/`). Cada sección baja solo los archivos que nece
 | Empleo (P2) | Empleo formal por distrito y año, por sexo y por raza o color. |
 | Transporte y equipamientos (P1) | Cobertura de transporte, pasajeros, escuelas, deporte, ferias y shoppings. |
 | Gente | Población, densidad y favelas por distrito; área construida residencial. |
-| Ambiente | Vegetación por subprefeitura en 2010, 2015 y 2020. |
+| Ambiente | Vegetación por subprefeitura en 2010, 2015 y 2020; temperatura mínima de 1933 a 2025. |
 | Fuentes y método | El catálogo y el diccionario, generados desde el Excel. |
 | Lo que no cubrimos | Lo que el lago no permite responder. |
 

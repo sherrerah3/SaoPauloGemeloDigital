@@ -55,8 +55,8 @@ export const SECCIONES: Seccion[] = [
   {
     id: "ambiente",
     titulo: "Ambiente",
-    resumen: "Cobertura vegetal por subprefeitura en 2010, 2015 y 2020.",
-    fuentes: ["F25", "F26", "F27"],
+    resumen: "Cobertura vegetal por subprefeitura en 2010, 2015 y 2020, y temperatura mínima de 1933 a 2025.",
+    fuentes: ["F25", "F26", "F27", "F06"],
     lista: true,
   },
   {

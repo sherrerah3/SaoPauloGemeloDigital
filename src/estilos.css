@@ -286,6 +286,13 @@ input {
   letter-spacing: -0.025em;
   line-height: 1.04;
 }
+.seccion-cabecera .subtitulo-seccion {
+  margin-bottom: 8px;
+  font-size: clamp(1.35rem, 2.6vw, 1.7rem);
+  font-weight: 720;
+  font-stretch: 112%;
+  letter-spacing: -0.015em;
+}
 .seccion-cabecera h1 {
   font-size: clamp(1.7rem, 3.6vw, 2.4rem);
   font-weight: 720;
@@ -573,6 +580,61 @@ input {
   color: var(--texto);
   font-size: 15px;
 }
+/* --- Selector de año (componentes/SelectorAnio.tsx) ---
+ * A todo el ancho de la sección, igual que la rejilla de tarjetas. Las marcas se corren medio tirador
+ * (8 px) hacia dentro para quedar bajo el centro del tirador en cada extremo. */
+.selector-anio {
+  --medio-tirador: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-stretch: 92%;
+  color: var(--texto-2);
+}
+.selector-anio-rango {
+  margin: 0;
+  text-align: center;
+  color: var(--texto-2);
+}
+.selector-anio-etiqueta strong {
+  color: var(--texto);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.selector-anio input[type="range"] {
+  width: 100%;
+  min-height: 32px;
+  margin: 0;
+  accent-color: var(--acento);
+  cursor: pointer;
+}
+.selector-anio input[type="range"]:disabled {
+  cursor: default;
+}
+.selector-anio-marcas {
+  position: relative;
+  height: 1.4em;
+  margin: 0 var(--medio-tirador);
+  font-variant-numeric: tabular-nums;
+  color: var(--texto-tenue);
+}
+.selector-anio-marcas span {
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+.selector-anio-marcas .primera {
+  transform: translateX(calc(-1 * var(--medio-tirador)));
+}
+.selector-anio-marcas .ultima {
+  transform: translateX(calc(-100% + var(--medio-tirador)));
+}
+.selector-anio-marcas .activa {
+  color: var(--texto);
+  font-weight: 650;
+}
 .boton-secundario {
   min-height: 40px;
   padding: 6px 14px;
@@ -701,11 +763,63 @@ input {
   color: var(--texto-2);
 }
 
+/* Globo con foto de los sitios emblemáticos (se abre al pasar el mouse). */
+.popup-sitio {
+  z-index: 2;
+}
+.popup-sitio .maplibregl-popup-content {
+  padding: 6px;
+  pointer-events: none;
+}
+.globo-sitio {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 240px;
+  line-height: 1.3;
+}
+.globo-sitio img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  margin-bottom: 4px;
+  border-radius: calc(var(--radio) - 2px);
+  background: var(--superficie-2);
+}
+.globo-credito {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--texto-2);
+}
+.creditos-fotos {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--texto-2);
+}
+.creditos-fotos summary {
+  cursor: pointer;
+}
+.creditos-fotos ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
 .mapa-3d-contenedor {
   position: relative;
 }
 .mapa-3d {
   height: min(70vh, 640px);
+}
+/* Pantalla completa: el mapa ocupa todo el alto. `maplibregl-pseudo-fullscreen` es el respaldo de
+   MapLibre en navegadores sin la API (iPhone). */
+.mapa-3d-contenedor:fullscreen,
+.mapa-3d-contenedor.maplibregl-pseudo-fullscreen {
+  background: var(--superficie);
+}
+.mapa-3d-contenedor:fullscreen .mapa-3d,
+.mapa-3d-contenedor.maplibregl-pseudo-fullscreen .mapa-3d {
+  height: 100%;
 }
 .panel-capas {
   position: absolute;
@@ -900,6 +1014,10 @@ code {
 
 /* --- Móvil --- */
 @media (max-width: 860px) {
+  /* No caben todas las marcas: quedan los extremos; el año elegido ya se lee arriba de la barra. */
+  .selector-anio-marcas .intermedia {
+    display: none;
+  }
   .rejilla-dos {
     grid-template-columns: 1fr;
   }
