@@ -13,6 +13,7 @@ import {
 import { EJE, ESTILO_TOOLTIP, SERIE_1 } from "../componentes/graficos";
 import MapaDistritos from "../componentes/MapaDistritos";
 import RankingDistritos from "../componentes/RankingDistritos";
+import SelectorAnio from "../componentes/SelectorAnio";
 import TarjetaIndicador from "../componentes/TarjetaIndicador";
 import {
   type ArchivoIndicadores,
@@ -69,8 +70,9 @@ export default function Ambiente() {
         .sort((a, b) => a.anio - b.anio),
     [temperatura],
   );
-  const aniosTemp = useMemo(() => serieAnual.map((d) => String(d.anio)).reverse(), [serieAnual]);
-  const anioTemp = anioTempUrl && aniosTemp.includes(anioTempUrl) ? anioTempUrl : aniosTemp[0];
+  const aniosTemp = useMemo(() => serieAnual.map((d) => String(d.anio)), [serieAnual]);
+  // Por defecto el último año; un año de la URL que no está en la serie se ignora.
+  const anioTemp = anioTempUrl && aniosTemp.includes(anioTempUrl) ? anioTempUrl : aniosTemp.at(-1);
   const normalAnual = indiceTemp.get(`temp_min_normal_anual|${NORMAL}`);
   const mensual = MESES.map((mes, k) => {
     const m = String(k + 1).padStart(2, "0");
@@ -102,15 +104,9 @@ export default function Ambiente() {
         </p>
       </header>
 
+      <SelectorAnio etiqueta="Año del mapeo" anios={ANIOS} valor={anio} onCambiar={setAnio} />
+
       <div className="filtros">
-        <label>
-          Año del mapeo
-          <select value={anio} onChange={(e) => setAnio(e.target.value)}>
-            {ANIOS.map((a) => (
-              <option key={a}>{a}</option>
-            ))}
-          </select>
-        </label>
         <label>
           Indicador
           <select value={metrica} onChange={(e) => setMetrica(e.target.value)}>
@@ -174,16 +170,7 @@ export default function Ambiente() {
         </p>
       </header>
 
-      <div className="filtros">
-        <label>
-          Año de la temperatura
-          <select value={anioTemp ?? ""} onChange={(e) => setAnioTemp(e.target.value)}>
-            {aniosTemp.map((a) => (
-              <option key={a}>{a}</option>
-            ))}
-          </select>
-        </label>
-      </div>
+      <SelectorAnio etiqueta="Año de la temperatura" anios={aniosTemp} valor={anioTemp} onCambiar={setAnioTemp} />
 
       <div className="rejilla-tarjetas">
         <TarjetaIndicador

@@ -16,6 +16,7 @@ import CodigoPregunta from "../componentes/CodigoPregunta";
 import { EJE, ESTILO_TOOLTIP, SERIE_1 } from "../componentes/graficos";
 import MapaDistritos from "../componentes/MapaDistritos";
 import RankingDistritos from "../componentes/RankingDistritos";
+import SelectorAnio from "../componentes/SelectorAnio";
 import TarjetaIndicador from "../componentes/TarjetaIndicador";
 import {
   type ArchivoIndicadores,
@@ -118,15 +119,10 @@ export default function Empleo() {
         </p>
       </header>
 
+      {/* Los años cambian con el indicador: por sexo desde 2022, por raza o color desde 2023. */}
+      <SelectorAnio etiqueta="Año" anios={anios} valor={anio} onCambiar={setAnio} />
+
       <div className="filtros">
-        <label>
-          Año
-          <select value={anio} onChange={(e) => setAnio(e.target.value)}>
-            {anios.map((a) => (
-              <option key={a}>{a}</option>
-            ))}
-          </select>
-        </label>
         <label>
           Indicador
           <select value={metrica} onChange={(e) => setMetrica(e.target.value)}>

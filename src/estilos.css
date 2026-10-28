@@ -580,6 +580,61 @@ input {
   color: var(--texto);
   font-size: 15px;
 }
+/* --- Selector de año (componentes/SelectorAnio.tsx) ---
+ * A todo el ancho de la sección, igual que la rejilla de tarjetas. Las marcas se corren medio tirador
+ * (8 px) hacia dentro para quedar bajo el centro del tirador en cada extremo. */
+.selector-anio {
+  --medio-tirador: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-stretch: 92%;
+  color: var(--texto-2);
+}
+.selector-anio-rango {
+  margin: 0;
+  text-align: center;
+  color: var(--texto-2);
+}
+.selector-anio-etiqueta strong {
+  color: var(--texto);
+  font-size: 15px;
+  font-variant-numeric: tabular-nums;
+}
+.selector-anio input[type="range"] {
+  width: 100%;
+  min-height: 32px;
+  margin: 0;
+  accent-color: var(--acento);
+  cursor: pointer;
+}
+.selector-anio input[type="range"]:disabled {
+  cursor: default;
+}
+.selector-anio-marcas {
+  position: relative;
+  height: 1.4em;
+  margin: 0 var(--medio-tirador);
+  font-variant-numeric: tabular-nums;
+  color: var(--texto-tenue);
+}
+.selector-anio-marcas span {
+  position: absolute;
+  top: 0;
+  white-space: nowrap;
+  transform: translateX(-50%);
+}
+.selector-anio-marcas .primera {
+  transform: translateX(calc(-1 * var(--medio-tirador)));
+}
+.selector-anio-marcas .ultima {
+  transform: translateX(calc(-100% + var(--medio-tirador)));
+}
+.selector-anio-marcas .activa {
+  color: var(--texto);
+  font-weight: 650;
+}
 .boton-secundario {
   min-height: 40px;
   padding: 6px 14px;
@@ -959,6 +1014,10 @@ code {
 
 /* --- Móvil --- */
 @media (max-width: 860px) {
+  /* No caben todas las marcas: quedan los extremos; el año elegido ya se lee arriba de la barra. */
+  .selector-anio-marcas .intermedia {
+    display: none;
+  }
   .rejilla-dos {
     grid-template-columns: 1fr;
   }
