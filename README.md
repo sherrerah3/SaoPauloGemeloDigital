@@ -86,6 +86,10 @@ del repositorio. Son los archivos oficiales tal como los publica cada fuente, co
 Con `npm run datos:descargar` (o su versión con Docker) quedan en `data/raw/` y el pipeline los reutiliza, así
 que corre aunque GeoSampa, Infocidade o SPTrans no respondan ese día. No pisa crudos que ya tengas.
 
+Los datos están congelados en esa copia: si `data/raw/` está vacío, `npm run datos` baja el release antes de
+empezar, y F05 usa solo los reportes que ya tiene. Para buscar reportes nuevos de F05:
+`npm run datos -- --actualizar`.
+
 Para publicar una copia nueva: correr el pipeline contra los servidores, `python ingesta/crudos.py empaquetar`,
 subir `data/crudos.zip` a un release nuevo (`crudos-AAAA-MM-DD`) y cambiar `ETIQUETA` en `ingesta/crudos.py`.
 

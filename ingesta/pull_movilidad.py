@@ -225,16 +225,20 @@ def mensual_por_linea(df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
-def pasajeros() -> pd.DataFrame:
-    # De a uno: el servidor responde 429 si se le piden varios a la vez.
-    try:
-        rutas = [bajar(e) for e in enlaces_f05()]
-    except requests.RequestException as e:
-        # Sin la página de la Prefeitura se usan los crudos que ya hay (p. ej., los del release).
-        rutas = sorted((RAW / "f05").glob("*.xls*"))
-        if not rutas:
-            raise
-        print(f"  aviso: no se pudo leer la lista de F05 ({e}); se usan los {len(rutas)} crudos de data/raw/f05/")
+def pasajeros(actualizar: bool) -> pd.DataFrame:
+    """Los datos quedan congelados en los crudos de data/raw/f05/ (los del release). Solo con
+    actualizar=True, o si no hay ninguno, se leen las páginas de la Prefeitura y se bajan los nuevos."""
+    rutas = sorted((RAW / "f05").glob("*.xls*"))
+    if rutas and not actualizar:
+        print(f"  F05: se usan los {len(rutas)} crudos de data/raw/f05/ (--actualizar para buscar nuevos)")
+    else:
+        try:
+            # De a uno: el servidor responde 429 si se le piden varios a la vez.
+            rutas = [bajar(e) for e in enlaces_f05()]
+        except requests.RequestException as e:
+            if not rutas:
+                raise
+            print(f"  aviso: no se pudo leer la lista de F05 ({e}); se usan los {len(rutas)} crudos de data/raw/f05/")
     reportes = []
     for ruta in rutas:
         try:
@@ -293,7 +297,7 @@ def main():
         guardar_lago_geo(gdf, nombre)
 
     if "--sin-pasajeros" not in sys.argv:
-        mensual = pasajeros()
+        mensual = pasajeros(actualizar="--actualizar" in sys.argv)
         guardar_lago(mensual, "sptrans_pasajeros.csv")
         # Unión con F29: el código de F05 es el de F29 sin guion («1012-10» → «101210»).
         codigos_f29 = set(capas["buses"]["codigo_linea"].str.replace("-", "", regex=False))
