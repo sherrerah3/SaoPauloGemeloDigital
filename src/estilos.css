@@ -701,11 +701,63 @@ input {
   color: var(--texto-2);
 }
 
+/* Globo con foto de los sitios emblemáticos (se abre al pasar el mouse). */
+.popup-sitio {
+  z-index: 2;
+}
+.popup-sitio .maplibregl-popup-content {
+  padding: 6px;
+  pointer-events: none;
+}
+.globo-sitio {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 240px;
+  line-height: 1.3;
+}
+.globo-sitio img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 3 / 2;
+  object-fit: cover;
+  margin-bottom: 4px;
+  border-radius: calc(var(--radio) - 2px);
+  background: var(--superficie-2);
+}
+.globo-credito {
+  margin-top: 2px;
+  font-size: 11px;
+  color: var(--texto-2);
+}
+.creditos-fotos {
+  margin-top: 12px;
+  font-size: 13px;
+  color: var(--texto-2);
+}
+.creditos-fotos summary {
+  cursor: pointer;
+}
+.creditos-fotos ul {
+  margin: 8px 0 0;
+  padding-left: 18px;
+}
+
 .mapa-3d-contenedor {
   position: relative;
 }
 .mapa-3d {
   height: min(70vh, 640px);
+}
+/* Pantalla completa: el mapa ocupa todo el alto. `maplibregl-pseudo-fullscreen` es el respaldo de
+   MapLibre en navegadores sin la API (iPhone). */
+.mapa-3d-contenedor:fullscreen,
+.mapa-3d-contenedor.maplibregl-pseudo-fullscreen {
+  background: var(--superficie);
+}
+.mapa-3d-contenedor:fullscreen .mapa-3d,
+.mapa-3d-contenedor.maplibregl-pseudo-fullscreen .mapa-3d {
+  height: 100%;
 }
 .panel-capas {
   position: absolute;

@@ -4,6 +4,7 @@ import { agregarMascara, estiloSaoPaulo, LIMITES_NAVEGACION } from "../component
 import {
   type CameraOptions,
   type ExpressionSpecification,
+  FullscreenControl,
   type GeoJSONSource,
   type LayerSpecification,
   Map as MapaML,
@@ -12,6 +13,7 @@ import {
   Popup,
 } from "../componentes/maplibre";
 import { cargar } from "../datos";
+import { rutaFotoSitio, type Sitio, SITIOS, SITIOS_GEOJSON } from "../sitios";
 import { useTema } from "../tema";
 
 // Colores oficiales de Metrô y CPTM: el nombre de cada línea es su color, así que se respetan.
@@ -44,6 +46,8 @@ interface Capa {
   muestra: string;
   capas: Omit<LayerSpecification, "source">[];
   popup?: (p: Record<string, unknown>) => string;
+  /** Datos que ya vienen en el código (src/sitios.ts): no hay nada que bajar. */
+  datos?: FeatureCollection;
   /** Un solo archivo, que se baja la primera vez que se enciende la capa. */
   archivo?: string;
   /** O una carpeta partida en celdas (build_web.py): se bajan solo las cercanas, desde este zoom. */
@@ -58,6 +62,26 @@ interface IndiceCeldas {
 // Capa B del plan. Se bajan solo cuando se encienden; la red de bus y las paradas, además,
 // solo al acercarse y por zonas (pesan unos 3 y 4 MB en total).
 const CAPAS: Capa[] = [
+  {
+    id: "sitios",
+    titulo: "Sitios emblemáticos",
+    datos: SITIOS_GEOJSON,
+    fuente: "Commons",
+    muestra: "#8e44ad",
+    // Sin `popup`: su globo con foto se abre al pasar el mouse (registrarSitios).
+    capas: [
+      {
+        id: "sitios",
+        type: "circle",
+        paint: {
+          "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 6, 15, 9],
+          "circle-color": "#8e44ad",
+          "circle-stroke-color": "#ffffff",
+          "circle-stroke-width": 2.5,
+        },
+      },
+    ],
+  },
   {
     id: "metro",
     titulo: "Metro",
@@ -210,7 +234,7 @@ const CAPAS: Capa[] = [
   },
 ];
 const CAPAS_PENDIENTES = ["Estaciones de tren CPTM (no están en el catálogo)", "Densidad por sector censal (F41)"];
-const INICIALES: Record<string, boolean> = { metro: true, tren: true, estaciones: true };
+const INICIALES: Record<string, boolean> = { sitios: true, metro: true, tren: true, estaciones: true };
 
 function circulo(color: string, radio = 4) {
   return {
@@ -250,8 +274,76 @@ const CAMARA_INICIAL: CameraOptions = { center: [-46.6555, -23.5613], zoom: 14.2
 type EstadoCapa = "cargando" | "error";
 const ESTADO_VISIBLE: Record<string, string> = { cargando: "…", error: "sin datos" };
 
+// Alto del globo (foto de 160 px, tres líneas de texto, relleno y flecha) más el margen sobre el punto.
+const ALTO_GLOBO_PX = 270;
+
+/** Contenido del globo: foto, nombre, zona y crédito. Se arma con el DOM (sin HTML en texto). */
+function contenidoSitio(s: Sitio): HTMLElement {
+  const caja = document.createElement("div");
+  caja.className = "globo-sitio";
+  const foto = document.createElement("img");
+  foto.src = rutaFotoSitio(s.id);
+  foto.alt = `Foto de ${s.nombre}`;
+  foto.width = 240;
+  foto.height = 160;
+  const nombre = document.createElement("strong");
+  nombre.textContent = s.nombre;
+  const zona = document.createElement("span");
+  zona.className = "popup-unidad";
+  zona.textContent = s.zona;
+  const credito = document.createElement("span");
+  credito.className = "globo-credito";
+  credito.textContent = `Foto: ${s.autor}, ${s.licencia}`;
+  caja.append(foto, nombre, zona, credito);
+  return caja;
+}
+
+/** Globo con la foto de un sitio emblemático: aparece al pasar el mouse (y al tocar, en pantallas táctiles). */
+function registrarSitios(m: MapaML) {
+  let globo: Popup | null = null;
+  const cerrar = () => {
+    globo?.remove();
+    globo = null;
+  };
+  const mostrar = (e: MapLayerMouseEvent) => {
+    const sitio = SITIOS.find((s) => s.id === e.features?.[0]?.properties?.id);
+    if (!sitio) return;
+    cerrar();
+    // Lo normal es que el globo quede encima del punto, con la flecha hacia abajo. Si el punto está tan
+    // arriba que el globo se cortaría contra el borde superior del mapa, se abre debajo.
+    const cercaDelBorde = m.project(sitio.coordenadas).y < ALTO_GLOBO_PX;
+    globo = new Popup({
+      closeButton: false,
+      closeOnClick: false,
+      anchor: cercaDelBorde ? "top" : "bottom",
+      offset: 14,
+      maxWidth: "260px",
+      className: "popup-sitio",
+    })
+      .setLngLat(sitio.coordenadas)
+      .setDOMContent(contenidoSitio(sitio))
+      .addTo(m);
+  };
+  m.on("mouseenter", "sitios", (e: MapLayerMouseEvent) => {
+    m.getCanvas().style.cursor = "pointer";
+    mostrar(e);
+  });
+  m.on("mouseleave", "sitios", () => {
+    m.getCanvas().style.cursor = "";
+    cerrar();
+  });
+  m.on("click", "sitios", mostrar);
+  // En pantallas táctiles no hay "mouseleave": un toque en otro lado cierra el globo.
+  m.on("click", (e) => {
+    if (!m.getLayer("sitios") || !m.queryRenderedFeatures(e.point, { layers: ["sitios"] }).length) cerrar();
+  });
+  // Se piden las fotos de antemano para que el globo salga completo desde el primer paso del mouse.
+  for (const s of SITIOS) new Image().src = rutaFotoSitio(s.id);
+}
+
 /** Un popup compartido: clic en cualquier capa que tenga `popup` muestra sus datos. */
 function registrarPopups(m: MapaML) {
+  registrarSitios(m);
   const popup = new Popup({ closeButton: false, offset: 8 });
   for (const capa of CAPAS) {
     if (!capa.popup) continue;
@@ -274,6 +366,8 @@ function registrarPopups(m: MapaML) {
 export default function Mapa3D() {
   const tema = useTema();
   const contenedor = useRef<HTMLDivElement>(null);
+  // Lo que pasa a pantalla completa: el mapa y el panel de capas juntos.
+  const envoltorio = useRef<HTMLDivElement>(null);
   const camara = useRef<CameraOptions>(CAMARA_INICIAL);
   const [mapa, setMapa] = useState<MapaML | null>(null);
   const [visibles, setVisibles] = useState<Record<string, boolean>>(INICIALES);
@@ -295,10 +389,15 @@ export default function Mapa3D() {
         minZoom: 9,
         maxBounds: LIMITES_NAVEGACION,
         attributionControl: { compact: true },
+        locale: {
+          "FullscreenControl.Enter": "Ver en pantalla completa",
+          "FullscreenControl.Exit": "Salir de pantalla completa",
+        },
       });
       creado = m;
       celdas.current = new Map();
       m.addControl(new NavigationControl({ visualizePitch: true }), "top-right");
+      m.addControl(new FullscreenControl({ container: envoltorio.current! }), "top-right");
       registrarPopups(m);
       m.on("moveend", () => {
         camara.current = { center: m.getCenter(), zoom: m.getZoom(), pitch: m.getPitch(), bearing: m.getBearing() };
@@ -327,9 +426,12 @@ export default function Mapa3D() {
     const agregarFuente = (capa: Capa, datos: FeatureCollection) => {
       mapa.addSource(capa.id, { type: "geojson", data: datos });
       for (const sub of capa.capas) mapa.addLayer({ ...sub, source: capa.id } as LayerSpecification);
+      // Los sitios van siempre encima, para que ninguna línea tape el punto donde se pasa el mouse.
+      if (capa.id !== "sitios" && mapa.getLayer("sitios")) mapa.moveLayer("sitios");
     };
 
     const agregarCapa = (capa: Capa) => {
+      if (capa.datos) return agregarFuente(capa, capa.datos);
       if (!capa.archivo) return;
       marcar(capa.id, "cargando");
       cargar<FeatureCollection>(capa.archivo)
@@ -402,11 +504,11 @@ export default function Mapa3D() {
         <p className="entrada">
           Edificios de OpenStreetMap extruidos sobre el mapa base de OpenFreeMap, con las capas oficiales de GeoSampa
           encima. Arrastra con clic derecho (o dos dedos) para inclinar y girar; haz clic en una línea, estación o
-          parada.
+          parada. Pasa el mouse por un punto morado para ver la foto de ese sitio emblemático.
         </p>
       </header>
 
-      <div className="mapa-3d-contenedor">
+      <div ref={envoltorio} className="mapa-3d-contenedor">
         <div
           ref={contenedor}
           className="mapa mapa-3d"
@@ -451,6 +553,20 @@ export default function Mapa3D() {
           </ul>
         </div>
       </div>
+      <details className="creditos-fotos">
+        <summary>Sitios emblemáticos y créditos de las fotos</summary>
+        <ul>
+          {SITIOS.map((s) => (
+            <li key={s.id}>
+              <strong>{s.nombre}</strong> ({s.zona}). Foto de {s.autor},{" "}
+              <a href={s.fuente} rel="noreferrer noopener" target="_blank">
+                {s.licencia} en Wikimedia Commons
+              </a>
+              .
+            </li>
+          ))}
+        </ul>
+      </details>
       <p className="nota">
         La altura de los edificios es la de OpenStreetMap (etiqueta de altura o número de pisos × 3,66 m), no la del
         LiDAR de la Prefeitura, que está fuera del lago. Los que no tienen ninguno de los dos datos aparecen con 5 m: en

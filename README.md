@@ -95,6 +95,18 @@ no se sube. Para agregar una:
 La foto de portada es de Raphael Nogueira en Unsplash (licencia de Unsplash: uso libre; el crédito va en la
 portada y en el pie).
 
+### Sitios emblemáticos del mapa 3D
+
+En el mapa 3D, al pasar el mouse por un punto morado se abre un globo con la foto del sitio. Los sitios viven
+en `src/sitios.ts` (nombre, coordenadas, autor, licencia y enlace a Wikimedia Commons) y sus fotos en
+`public/fotos/sitios/<id>-480.webp`. Para sumar uno, convierte la foto y agrega su entrada en `src/sitios.ts`:
+
+```bash
+.venv/bin/python herramientas/fotos_webp.py ../fotos-saopaulo/masp.jpg masp --anchos 480 --carpeta sitios
+```
+
+Usa solo fotos con licencia libre; el crédito sale en el globo y en la lista bajo el mapa.
+
 ## Calidad del código
 
 - **Front:** [Biome](https://biomejs.dev) (`biome.json`), 2 espacios y 120 columnas, imports ordenados.
