@@ -4,7 +4,7 @@ Qué fuente del Diccionario (`data/Diccionario_de_datos_TallerDatos.xlsx`) entra
 dónde aparece. Los IDs son los de la hoja «1. Fuentes». El detalle de cada campo está en la hoja
 «2. Diccionario» y, ya exportado, en `data/diccionario.csv` y en la sección «Fuentes y método» del sitio.
 
-Resumen: de las 41 fuentes del catálogo, 27 están en el lago y se publican; 14 quedan por fuera (al final,
+Resumen: de las 41 fuentes del catálogo, 28 están en el lago y se publican; 13 quedan por fuera (al final,
 con el motivo).
 
 ## P1. Transporte y equipamientos
@@ -50,9 +50,15 @@ captar los datos; cada tarjeta lo advierte.
 | F32 | Favelas (polígonos) | SEHAB/HABITASAMPA, vía GeoSampa | Favelas, domicilios en favelas (número y % de los domicilios del censo) y % del área, por distrito. Capa del mapa 3D con el nombre de cada favela, sin su calle. | `geo/favelas.geojson` (no se sube: trae la calle y la propiedad del terreno, que son Sensibles) |
 | F28 | Área construida residencial (catastro del IPTU), 1995-2025 | Prefeitura, vía Infocidade | Serie de la ciudad en la sección Gente. La fuente no la abre por distrito. | `area_construida_residencial.csv` |
 | F25, F26, F27 | Cobertura vegetal por subprefeitura: 2020, 2015 y 2010 | SVMA, vía Infocidade | Vegetación por habitante y superficie verde por subprefeitura, un año a la vez. | `cobertura_vegetal.csv` |
+| F06 | Temperatura mínima media mensual del aire, 1933-2025 | IAG/USP (estación Água Funda), vía Infocidade | Promedio anual, diferencia con la normal 1991-2020 y comparación mes a mes, en la sección Ambiente. | `temperatura_minima.csv` |
 
 Cada año de cobertura vegetal se midió con un método distinto (satélite SPOT en 2010, RapidEye en 2015 y
 fotos aéreas de 2017-2018 con LiDAR en 2020). Por eso el sitio no calcula pérdida ni ganancia entre años.
+
+F06 sale de una sola estación meteorológica (IAG, en Água Funda), así que no representa a toda la ciudad:
+por eso no hay mapa de temperatura y cada cifra lleva esa advertencia. El sitio recalcula el promedio anual y
+la normal 1991-2020 a partir de los doce meses de cada año; el lago guarda solo los meses, como pide el
+Diccionario.
 
 ## Base geográfica (no son fuentes del catálogo)
 
@@ -69,7 +75,6 @@ fotos aéreas de 2017-2018 con LiDAR en 2020). Por eso el sitio no calcula pérd
 | F02 | Visitas al artículo «São Paulo» en Wikipedia | No responde ninguna de las dos preguntas. |
 | F03 | Establecimientos de salud | Pendiente para la sección «Municipio». |
 | F04 | Ingresos y gastos municipales | Pendiente para la sección «Municipio». |
-| F06 | Temperatura mínima | Una sola estación meteorológica; no representa la ciudad. |
 | F07 | IDH municipal, 2000 y 2010 | Desactualizado. |
 | F08 | Estimación de población del IBGE | La API (`servicodados.ibge.gov.br`) no respondía al integrarla, en octubre de 2026. |
 | F09 | Olho Vivo (buses en tiempo real) | Necesita llave y un servidor; el sitio es estático. |

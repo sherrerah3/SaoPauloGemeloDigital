@@ -969,6 +969,86 @@ def construir_ambiente():
     publicar("indicadores/ambiente/subprefeituras.json", {**cabecera, "indicadores": registros})
 
 
+# Normal climatológica de la OMM: promedio de 30 años seguidos. La fuente publica la de 1991-2020.
+NORMAL_DESDE, NORMAL_HASTA = 1991, 2020
+ESTACION_F06 = "Estación del IAG en Água Funda"
+
+
+def construir_temperatura():
+    """Temperatura mínima media del aire (F06): por mes, por año, normal 1991-2020 y diferencia con la normal.
+
+    Es una sola estación meteorológica (IAG, USP), no la ciudad: la advertencia de F06 sale en cada cifra.
+    Las normales y los promedios anuales se recalculan de los doce meses de cada año.
+    """
+    df = pd.read_csv(LAGO / "temperatura_minima.csv")
+    comunes = {
+        "campo_lago": "temp_min_media_c",
+        "unidad": "°C",
+        "nivel": "municipio",
+        "codigo": "MSP",
+        "nombre": ESTACION_F06,
+        "fuente_id": "F06",
+    }
+    registros = []
+    for fila in df.itertuples():
+        registros.append(
+            indicador(
+                clave="temp_min_mes", valor=fila.temp_min_media_c, vigencia=f"{fila.anio}-{fila.mes:02d}", **comunes
+            )
+        )
+
+    anual = df.groupby("anio")["temp_min_media_c"].agg(["mean", "count"])
+    anual = anual[anual["count"] == 12]["mean"]  # solo años con los doce meses
+    for anio, valor in anual.items():
+        registros.append(
+            indicador(
+                clave="temp_min_anual",
+                valor=valor,
+                vigencia=anio,
+                calculo="promedio de los 12 promedios mensuales del año",
+                **comunes,
+            )
+        )
+
+    ventana = f"{NORMAL_DESDE}-{NORMAL_HASTA}"
+    de_la_normal = df[df["anio"].between(NORMAL_DESDE, NORMAL_HASTA)]
+    if not (de_la_normal.groupby("mes").size() == NORMAL_HASTA - NORMAL_DESDE + 1).all():
+        raise ValueError(f"F06: faltan meses en los años de la normal {ventana}")
+    normal_mes = de_la_normal.groupby("mes")["temp_min_media_c"].mean()
+    for mes, valor in normal_mes.items():
+        registros.append(
+            indicador(
+                clave=f"temp_min_normal_m{mes:02d}",
+                valor=valor,
+                vigencia=ventana,
+                calculo=f"promedio de ese mes en los {NORMAL_HASTA - NORMAL_DESDE + 1} años {ventana}",
+                **comunes,
+            )
+        )
+    normal_anual = normal_mes.mean()
+    registros.append(
+        indicador(
+            clave="temp_min_normal_anual",
+            valor=normal_anual,
+            vigencia=ventana,
+            calculo=f"promedio de las 12 normales mensuales {ventana}",
+            **comunes,
+        )
+    )
+    for anio, valor in anual.items():
+        registros.append(
+            indicador(
+                clave="temp_min_anual_vs_normal",
+                valor=valor - normal_anual,
+                vigencia=anio,
+                calculo=f"promedio anual del año menos la normal {ventana}",
+                **comunes,
+            )
+        )
+    cabecera = {"seccion": "ambiente", "pregunta": "", "generado": dt.date.today().isoformat()}
+    publicar("indicadores/ambiente/temperatura.json", {**cabecera, "indicadores": registros})
+
+
 def construir_catalogo():
     fuentes = pd.read_csv(FUENTES_CSV, dtype=str).fillna("")
     dicc = pd.read_csv(DICCIONARIO_CSV, dtype=str).fillna("")
@@ -986,6 +1066,7 @@ def main():
     construir_equipamientos()
     construir_gente()
     construir_ambiente()
+    construir_temperatura()
 
 
 if __name__ == "__main__":

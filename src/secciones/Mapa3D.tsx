@@ -61,23 +61,59 @@ interface IndiceCeldas {
 
 // Capa B del plan. Se bajan solo cuando se encienden; la red de bus y las paradas, además,
 // solo al acercarse y por zonas (pesan unos 3 y 4 MB en total).
+const COLOR_SITIOS = "#8e44ad";
+const ESTRELLA_SITIO = "estrella-sitio";
+
+/**
+ * Estrella morada de cinco puntas con borde blanco, dibujada en un canvas (no hay archivo de imagen).
+ * Se crea a 48 px y se registra con pixelRatio 2, así se ve nítida en pantallas de alta densidad.
+ */
+function crearEstrella(): ImageData {
+  const lado = 48;
+  const lienzo = document.createElement("canvas");
+  lienzo.width = lienzo.height = lado;
+  const ctx = lienzo.getContext("2d")!;
+  const centro = lado / 2;
+  const radioExterior = lado / 2 - 6; // deja lugar al borde blanco
+  const radioInterior = radioExterior * 0.45;
+  ctx.beginPath();
+  for (let i = 0; i < 10; i++) {
+    const radio = i % 2 === 0 ? radioExterior : radioInterior;
+    const angulo = -Math.PI / 2 + (i * Math.PI) / 5;
+    const [x, y] = [centro + radio * Math.cos(angulo), centro + radio * Math.sin(angulo)];
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  }
+  ctx.closePath();
+  ctx.lineJoin = "round";
+  // El borde se dibuja centrado en el contorno y el relleno tapa su mitad interior: queda 2 px de borde.
+  ctx.lineWidth = 8;
+  ctx.strokeStyle = "#ffffff";
+  ctx.stroke();
+  ctx.fillStyle = COLOR_SITIOS;
+  ctx.fill();
+  return ctx.getImageData(0, 0, lado, lado);
+}
+
 const CAPAS: Capa[] = [
   {
     id: "sitios",
     titulo: "Sitios emblemáticos",
     datos: SITIOS_GEOJSON,
     fuente: "Commons",
-    muestra: "#8e44ad",
+    muestra: COLOR_SITIOS,
     // Sin `popup`: su globo con foto se abre al pasar el mouse (registrarSitios).
     capas: [
       {
         id: "sitios",
-        type: "circle",
-        paint: {
-          "circle-radius": ["interpolate", ["linear"], ["zoom"], 10, 6, 15, 9],
-          "circle-color": "#8e44ad",
-          "circle-stroke-color": "#ffffff",
-          "circle-stroke-width": 2.5,
+        type: "symbol",
+        layout: {
+          "icon-image": ESTRELLA_SITIO,
+          // Más chica al alejarse, para que no tape lo que está cerca; a zoom 14 mide unos 19 px.
+          "icon-size": ["interpolate", ["linear"], ["zoom"], 10, 0.55, 14, 0.8, 17, 1.1],
+          // Siempre visible y por encima del resto: las estrellas no compiten con los rótulos del mapa base.
+          "icon-allow-overlap": true,
+          "icon-ignore-placement": true,
         },
       },
     ],
@@ -274,8 +310,39 @@ const CAMARA_INICIAL: CameraOptions = { center: [-46.6555, -23.5613], zoom: 14.2
 type EstadoCapa = "cargando" | "error";
 const ESTADO_VISIBLE: Record<string, string> = { cargando: "…", error: "sin datos" };
 
-// Alto del globo (foto de 160 px, tres líneas de texto, relleno y flecha) más el margen sobre el punto.
-const ALTO_GLOBO_PX = 270;
+// Medidas aproximadas del globo: la caja (foto de 160 px, tres líneas de texto y relleno) y lo que
+// ocupan la flecha y la separación del punto.
+const ALTO_CAJA_GLOBO_PX = 240;
+const ANCHO_CAJA_GLOBO_PX = 252;
+const SEPARACION_GLOBO_PX = 26;
+
+type AnclajeGlobo = "bottom" | "top" | "left" | "right";
+
+/**
+ * Dónde abrir el globo para que se corte lo menos posible contra los bordes del mapa.
+ * "bottom" lo deja encima del punto, "top" debajo, "left" a la derecha y "right" a la izquierda.
+ * Para cada opción se mide cuántos píxeles se saldrían; gana la que menos, y a igualdad
+ * (sobre todo cuando cabe) se prefiere encima del punto.
+ */
+function anclajeGlobo(m: MapaML, punto: { x: number; y: number }): AnclajeGlobo {
+  const { clientWidth: ancho, clientHeight: alto } = m.getContainer();
+  const arriba = punto.y;
+  const abajo = alto - punto.y;
+  const vertical = ALTO_CAJA_GLOBO_PX + SEPARACION_GLOBO_PX;
+  const horizontal = ANCHO_CAJA_GLOBO_PX + SEPARACION_GLOBO_PX;
+  // Al costado el globo queda centrado en el punto: necesita media caja arriba y media abajo.
+  const mediaCaja = ALTO_CAJA_GLOBO_PX / 2;
+  const cortesLaterales = Math.max(mediaCaja - arriba, mediaCaja - abajo);
+  const opciones: [AnclajeGlobo, number][] = [
+    ["bottom", vertical - arriba],
+    ["top", vertical - abajo],
+    ["left", Math.max(cortesLaterales, horizontal - (ancho - punto.x))],
+    ["right", Math.max(cortesLaterales, horizontal - punto.x)],
+  ];
+  let mejor = opciones[0];
+  for (const opcion of opciones) if (Math.max(0, opcion[1]) < Math.max(0, mejor[1])) mejor = opcion;
+  return mejor[0];
+}
 
 /** Contenido del globo: foto, nombre, zona y crédito. Se arma con el DOM (sin HTML en texto). */
 function contenidoSitio(s: Sitio): HTMLElement {
@@ -309,14 +376,13 @@ function registrarSitios(m: MapaML) {
     const sitio = SITIOS.find((s) => s.id === e.features?.[0]?.properties?.id);
     if (!sitio) return;
     cerrar();
-    // Lo normal es que el globo quede encima del punto, con la flecha hacia abajo. Si el punto está tan
-    // arriba que el globo se cortaría contra el borde superior del mapa, se abre debajo.
-    const cercaDelBorde = m.project(sitio.coordenadas).y < ALTO_GLOBO_PX;
+    // Lo normal es que el globo quede encima del punto, con la flecha hacia abajo. Si ahí se cortaría,
+    // se abre en el lado donde menos se corte (debajo solo si de verdad cabe mejor).
     globo = new Popup({
       closeButton: false,
       closeOnClick: false,
-      anchor: cercaDelBorde ? "top" : "bottom",
-      offset: 14,
+      anchor: anclajeGlobo(m, m.project(sitio.coordenadas)),
+      offset: 16,
       maxWidth: "260px",
       className: "popup-sitio",
     })
@@ -403,6 +469,8 @@ export default function Mapa3D() {
         camara.current = { center: m.getCenter(), zoom: m.getZoom(), pitch: m.getPitch(), bearing: m.getBearing() };
       });
       m.on("load", async () => {
+        // Las imágenes se pierden al recrear el mapa (cambio de tema): se registran en cada carga.
+        if (!m.hasImage(ESTRELLA_SITIO)) m.addImage(ESTRELLA_SITIO, crearEstrella(), { pixelRatio: 2 });
         await agregarMascara(m, COLOR_BORDE_MUNICIPIO[tema]);
         setMapa(m);
       });
@@ -504,7 +572,7 @@ export default function Mapa3D() {
         <p className="entrada">
           Edificios de OpenStreetMap extruidos sobre el mapa base de OpenFreeMap, con las capas oficiales de GeoSampa
           encima. Arrastra con clic derecho (o dos dedos) para inclinar y girar; haz clic en una línea, estación o
-          parada. Pasa el mouse por un punto morado para ver la foto de ese sitio emblemático.
+          parada. Pasa el mouse por una estrella morada para ver la foto de ese sitio emblemático.
         </p>
       </header>
 

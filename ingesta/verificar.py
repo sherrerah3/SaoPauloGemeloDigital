@@ -41,6 +41,7 @@ ARCHIVOS_LAGO = {
     "ferias_mercados.csv": ["F21"],
     "shoppings.csv": ["F22", "F23", "F24"],
     "cobertura_vegetal.csv": ["F25", "F26", "F27"],
+    "temperatura_minima.csv": ["F06"],
     "area_construida_residencial.csv": ["F28"],
     "geo/favelas.geojson": ["F32"],
     "geo/centros_deportivos.geojson": ["F33"],
@@ -190,6 +191,21 @@ def verificar_poblacion():
     prueba("códigos de sector únicos", sectores["codigo_sector"].is_unique)
 
 
+def verificar_temperatura():
+    print("Temperatura mínima (F06)")
+    t = pd.read_csv(LAGO / "temperatura_minima.csv")
+    prueba("F06: una fila por año y mes", not t.duplicated(["anio", "mes"]).any())
+    prueba("F06: meses entre 1 y 12", t["mes"].between(1, 12).all())
+    prueba("F06: doce meses en cada año", (t.groupby("anio").size() == 12).all())
+    anios = sorted(t["anio"].unique())
+    prueba("F06: años seguidos, sin huecos", anios == list(range(anios[0], anios[-1] + 1)), f"{anios[0]} a {anios[-1]}")
+    # Un punto decimal mal leído (17.975 → 17 975) se vería aquí como un valor imposible.
+    prueba("F06: temperaturas mínimas entre 0 y 30 °C", t["temp_min_media_c"].between(0, 30).all())
+    # La fuente publica la normal 1991-2020 (15,32 °C al año): recalcularla valida la tabla pivotada.
+    normal = t[t["anio"].between(1991, 2020)].groupby("mes")["temp_min_media_c"].mean().mean()
+    prueba("F06: la normal 1991-2020 recalculada coincide con la de la fuente (15,32 °C)", abs(normal - 15.32) < 0.01)
+
+
 def verificar_transporte():
     print("Transporte (F05, F29-F31, F35, F36)")
     cob = pd.read_csv(DATA / "derivados" / "cobertura_transporte_distrito.csv", dtype={"codigo_distrito": str})
@@ -292,6 +308,7 @@ def main():
     verificar_poblacion()
     verificar_transporte()
     verificar_equipamientos()
+    verificar_temperatura()
     verificar_publico()
     for a in avisos:
         print(f"  aviso {a}")

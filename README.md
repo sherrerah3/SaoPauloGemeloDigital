@@ -23,7 +23,7 @@ ingesta/              scripts de Python (se corren en local o en Docker)
   pull_poblacion.py   F41 y F28 (pendiente: F01, F08)
   pull_movilidad.py   F29, F30, F31, F35, F36 (GeoSampa) y F05 (pasajeros SPTrans)
   pull_equipamientos.py  F21-F24 (ferias, shoppings), F33, F34, F39, F40 (GeoSampa) y F32 (favelas)
-  pull_ambiente.py    F25-F27 (cobertura vegetal)
+  pull_ambiente.py    F25-F27 (cobertura vegetal) y F06 (temperatura mínima)
   calculos_p1.py      cobertura de transporte por distrito (P1)
   calculos_equipamientos.py  equipamientos y favelas por distrito
   build_web.py        lago → public/data/, con el filtro de privacidad
@@ -97,7 +97,7 @@ portada y en el pie).
 
 ### Sitios emblemáticos del mapa 3D
 
-En el mapa 3D, al pasar el mouse por un punto morado se abre un globo con la foto del sitio. Los sitios viven
+En el mapa 3D, al pasar el mouse por una estrella morada se abre un globo con la foto del sitio. Los sitios viven
 en `src/sitios.ts` (nombre, coordenadas, autor, licencia y enlace a Wikimedia Commons) y sus fotos en
 `public/fotos/sitios/<id>-480.webp`. Para sumar uno, convierte la foto y agrega su entrada en `src/sitios.ts`:
 
@@ -105,7 +105,9 @@ en `src/sitios.ts` (nombre, coordenadas, autor, licencia y enlace a Wikimedia Co
 .venv/bin/python herramientas/fotos_webp.py ../fotos-saopaulo/masp.jpg masp --anchos 480 --carpeta sitios
 ```
 
-Usa solo fotos con licencia libre; el crédito sale en el globo y en la lista bajo el mapa.
+Usa solo fotos con licencia libre; el crédito sale en el globo y en la lista bajo el mapa. Antes de fijar las
+coordenadas, revisa que la estrella no quede a menos de ~170 m de una estación ni a menos de ~300 m de otro
+sitio; en `src/sitios.ts` está anotado cómo se midió.
 
 ## Calidad del código
 

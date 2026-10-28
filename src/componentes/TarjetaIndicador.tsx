@@ -8,6 +8,11 @@ const ETIQUETA_TIPO: Record<Indicador["tipo"], string> = {
   declarado: "Declarado",
 };
 
+/** «Paradas» sale en minúscula junto a la cifra; los grados («°C») se dejan como vienen. */
+function unidadVisible(unidad: string): string {
+  return unidad.startsWith("°") ? unidad : unidad.toLowerCase();
+}
+
 interface Props {
   titulo: string;
   indicador?: Indicador;
@@ -31,7 +36,7 @@ export default function TarjetaIndicador({ titulo, indicador, destacado }: Props
       <h3>{titulo}</h3>
       <p className={destacado ? "cifra cifra-destacada" : "cifra"}>
         {formatear(indicador.valor, indicador.unidad)}
-        {!indicador.unidad.startsWith("%") && <span className="unidad"> {indicador.unidad.toLowerCase()}</span>}
+        {!indicador.unidad.startsWith("%") && <span className="unidad"> {unidadVisible(indicador.unidad)}</span>}
       </p>
       <p className="territorio">{indicador.nombre_territorio}</p>
       <dl className="metadatos">
