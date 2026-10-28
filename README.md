@@ -26,11 +26,12 @@ ingesta/              scripts de Python (se corren en local o en Docker)
   pull_ambiente.py    F25-F27 (cobertura vegetal)
   calculos_p1.py      cobertura de transporte por distrito (P1)
   calculos_equipamientos.py  equipamientos y favelas por distrito
+  crudos.py           baja (o empaqueta) la copia de data/raw/ del release
   build_web.py        lago → public/data/, con el filtro de privacidad
   verificar.py        pruebas; sale con código 1 si algo falla
 data/
   Diccionario_de_datos_TallerDatos.xlsx   catálogo (fuente de verdad)
-  raw/                crudos con fecha en el nombre (no se suben a git)
+  raw/                crudos con fecha en el nombre (no van en git: están en un release, ver abajo)
   lago/               CSV y GeoJSON limpios (GeoJSON en EPSG:31983); densidad_sectores, favelas y
                       empleo_raza no se suben (traen campos Sensibles), ni buses (>50 MB): se regeneran
                       con `npm run datos`
@@ -46,6 +47,7 @@ No hace falta instalar Python, GDAL ni Node: solo Docker.
 
 ```bash
 docker compose build                     # una vez, o cuando cambien requirements.txt o package.json
+docker compose run --rm datos python ingesta/crudos.py descargar   # copia de los crudos (opcional)
 docker compose run --rm datos            # pipeline completo: descarga, lago, public/data, verificación
 docker compose run --rm datos python ingesta/todo.py --sin-pasajeros   # sin los ~670 archivos de F05
 docker compose run --rm datos python ingesta/todo.py --solo-web        # solo build_web + verificar
@@ -62,6 +64,7 @@ Docker es para trabajar y reproducir; Vercel no lo usa: despliega el front con `
 python3 -m venv .venv && .venv/bin/pip install -r requirements.txt
 npm install
 
+npm run datos:descargar  # copia de los crudos del release en data/raw/ (opcional)
 npm run datos       # pipeline completo (ingesta/todo.py)
 npm run datos:web   # solo build_web + verificar
 npm run dev         # http://localhost:5173
@@ -74,6 +77,17 @@ Para un solo paso: `cd ingesta && ../.venv/bin/python pull_empleo.py`.
 
 La primera descarga de F05 tarda (un archivo por día, y el servidor de la Prefeitura responde 429 si se le
 pide rápido); después se reutilizan los crudos de `data/raw/f05/`.
+
+## Copia de los crudos
+
+Los crudos de `data/raw/` (unos 250 MB, 113 MB comprimidos) están en el release
+[`crudos-2026-10-27`](https://github.com/sherrerah3/SaoPauloGemeloDigital/releases/tag/crudos-2026-10-27)
+del repositorio. Son los archivos oficiales tal como los publica cada fuente, con la fecha en que se bajaron.
+Con `npm run datos:descargar` (o su versión con Docker) quedan en `data/raw/` y el pipeline los reutiliza, así
+que corre aunque GeoSampa, Infocidade o SPTrans no respondan ese día. No pisa crudos que ya tengas.
+
+Para publicar una copia nueva: correr el pipeline contra los servidores, `python ingesta/crudos.py empaquetar`,
+subir `data/crudos.zip` a un release nuevo (`crudos-AAAA-MM-DD`) y cambiar `ETIQUETA` en `ingesta/crudos.py`.
 
 ## Diseño
 

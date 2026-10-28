@@ -7,6 +7,8 @@ __pycache__/
 # Crudos: se regeneran con los scripts de ingesta (llevan fecha en el nombre).
 data/raw/*
 !data/raw/.gitkeep
+# Copia de data/raw/ para subir al release (ingesta/crudos.py empaquetar)
+data/crudos.zip
 *.tsbuildinfo
 # Caché de calculos_p1.py (se regenera sola)
 data/derivados/red_bus.gpkg

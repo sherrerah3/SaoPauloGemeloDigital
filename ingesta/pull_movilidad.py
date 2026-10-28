@@ -19,7 +19,7 @@ import pandas as pd
 import requests
 
 from comun import a_numero, descargar, guardar_lago, guardar_lago_geo, leer_capa_geosampa, leer_excel, normalizar_nombre
-from config import USER_AGENT
+from config import RAW, USER_AGENT
 
 OPERADORES = {"METRO": "Metrô", "VIAQUATRO": "ViaQuatro", "VIAMOBILIDADE": "ViaMobilidade", "CPTM": "CPTM"}
 
@@ -227,7 +227,14 @@ def mensual_por_linea(df: pd.DataFrame) -> pd.DataFrame:
 
 def pasajeros() -> pd.DataFrame:
     # De a uno: el servidor responde 429 si se le piden varios a la vez.
-    rutas = [bajar(e) for e in enlaces_f05()]
+    try:
+        rutas = [bajar(e) for e in enlaces_f05()]
+    except requests.RequestException as e:
+        # Sin la página de la Prefeitura se usan los crudos que ya hay (p. ej., los del release).
+        rutas = sorted((RAW / "f05").glob("*.xls*"))
+        if not rutas:
+            raise
+        print(f"  aviso: no se pudo leer la lista de F05 ({e}); se usan los {len(rutas)} crudos de data/raw/f05/")
     reportes = []
     for ruta in rutas:
         try:

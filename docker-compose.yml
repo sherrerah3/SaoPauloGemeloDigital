@@ -1,3 +1,4 @@
+# docker compose run --rm datos python ingesta/crudos.py descargar   copia de los crudos (release)
 # docker compose run --rm datos          pipeline completo (descarga, lago, public/data, verificación)
 # docker compose run --rm datos python ingesta/todo.py --sin-pasajeros
 # docker compose up web                  sitio en http://localhost:5173

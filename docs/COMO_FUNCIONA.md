@@ -19,7 +19,8 @@ Qué fuente alimenta cada parte está en [FUENTES.md](FUENTES.md).
    Sensible), transformaciones y advertencias.
 2. **Descarga.** Cada `pull_*.py` baja sus fuentes y guarda el crudo, con la fecha en el nombre, en
    `data/raw/`. Las capas de GeoSampa se piden por su servicio WFS; las tablas de Infocidade, por la URL del
-   Excel. Si ya hay un crudo, se reutiliza.
+   Excel. Si ya hay un crudo, se reutiliza. Una copia de todos los crudos está en un release de GitHub
+   (`ingesta/crudos.py descargar`, ver el README), para no depender de que los servidores respondan.
 3. **Limpieza.** Las reglas comunes están una sola vez en `comun.py`: números con coma decimal, «-» como
    cero cuando la fuente lo indica, años con marcas de nota («2019²»), texto mal codificado de GeoSampa,
    nombres de distrito sin tildes para unir tablas, etc.
@@ -51,7 +52,8 @@ Todo el pipeline corre con `npm run datos` (o `docker compose run --rm datos`).
   que solo salen como porcentaje y se suprimen bajo 10 casos. El nombre de las favelas es Sensible en el
   Diccionario, pero el equipo decidió publicarlo (ya es público en GeoSampa): la excepción, con su motivo, está
   en `config.PUBLICACION_AUTORIZADA`. Los archivos del lago que los contienen tampoco
-  se suben al repositorio (`.gitignore`).
+  se suben al repositorio (`.gitignore`). Los crudos del release sí traen esos campos: son copia de
+  archivos abiertos, tal como los publica cada fuente. El filtro aplica a lo que el sitio muestra.
 - **Verificación.** `verificar.py` revisa que los distritos sumen el total del municipio, que nada Sensible
   llegue a `public/data/`, que ningún archivo pase de 5 MB y que todo indicador cumpla el contrato. Sale con
   error si algo falla.

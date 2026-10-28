@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "datos": ".venv/bin/python ingesta/todo.py",
     "verificar": "cd ingesta && ../.venv/bin/python verificar.py",
+    "datos:descargar": ".venv/bin/python ingesta/crudos.py descargar",
     "datos:web": ".venv/bin/python ingesta/todo.py --solo-web",
     "lint": "biome check . && .venv/bin/ruff check ingesta && .venv/bin/ruff format --check ingesta",
     "formato": "biome check --write . && .venv/bin/ruff check --fix ingesta && .venv/bin/ruff format ingesta"
