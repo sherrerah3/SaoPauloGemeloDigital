@@ -14,7 +14,7 @@ export const SECCIONES: Seccion[] = [
     id: "panorama",
     titulo: "Panorama",
     resumen: "Cifras clave de la ciudad y acceso a las dos preguntas.",
-    fuentes: ["F01", "F08", "F04", "F05", "F11", "F12"],
+    fuentes: ["F08", "F04", "F05", "F11", "F12"],
     lista: true,
   },
   {
@@ -41,8 +41,9 @@ export const SECCIONES: Seccion[] = [
   {
     id: "gente",
     titulo: "Gente",
-    resumen: "Población y densidad por distrito, favelas y área construida residencial.",
-    fuentes: ["F41", "F32", "F28"],
+    resumen:
+      "Población y densidad por distrito, población desde 1872, IDH municipal, nacimientos, favelas y área construida residencial.",
+    fuentes: ["F41", "F01", "F07", "F18", "F19", "F20", "F32", "F28"],
     lista: true,
   },
   {

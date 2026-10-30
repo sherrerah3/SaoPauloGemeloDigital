@@ -18,6 +18,8 @@ data/lago/geo/densidad_sectores.geojson
 # Favelas trae nombre, ubicación y propiedad del terreno; raza o color es Sensible (F16-F17).
 data/lago/geo/favelas.geojson
 data/lago/empleo_raza.csv
+# Tipo de parto es Sensible (F18-F20).
+data/lago/nacimientos_tipo_parto.csv
 data/lago/geo/buses.geojson
 # Configuración local de Claude Code (las skills viven en ~/.claude/skills, no en el repo)
 .claude/

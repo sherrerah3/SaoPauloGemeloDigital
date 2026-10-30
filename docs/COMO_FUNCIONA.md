@@ -31,7 +31,7 @@ Qué fuente alimenta cada parte está en [FUENTES.md](FUENTES.md).
 |---|---|
 | `pull_territorio.py` | Distritos y subprefeituras (eje territorial) |
 | `pull_empleo.py` | F11-F17 |
-| `pull_poblacion.py` | F41, F28 |
+| `pull_poblacion.py` | F41, F28, F01, F07, F18-F20 |
 | `pull_movilidad.py` | F05, F29-F31, F35, F36 |
 | `pull_equipamientos.py` | F21-F24, F32-F34, F39, F40 |
 | `pull_ambiente.py` | F25-F27, F06 |
@@ -48,8 +48,9 @@ Todo el pipeline corre con `npm run datos` (o `docker compose run --rm datos`).
   fuente, vigencia, tipo (observado, estimado…), advertencia y, si es derivado, cómo se calculó. Es la única
   puerta de salida a `public/data/`.
 - **Privacidad.** En esa puerta se quitan los campos Sensibles (`config.CAMPOS_SENSIBLES`): el índice de
-  vulnerabilidad del censo, la calle y la propiedad del terreno de las favelas, y los conteos de empleo por raza o color,
-  que solo salen como porcentaje y se suprimen bajo 10 casos. El nombre de las favelas es Sensible en el
+  vulnerabilidad del censo, la calle y la propiedad del terreno de las favelas, los conteos de empleo por raza o color,
+  que solo salen como porcentaje y se suprimen bajo 10 casos, y el tipo de parto de los nacimientos, que sale
+  solo como total. El nombre de las favelas es Sensible en el
   Diccionario, pero el equipo decidió publicarlo (ya es público en GeoSampa): la excepción, con su motivo, está
   en `config.PUBLICACION_AUTORIZADA`. Los archivos del lago que los contienen tampoco
   se suben al repositorio (`.gitignore`). Los crudos del release sí traen esos campos: son copia de
@@ -69,7 +70,7 @@ Vite, React y TypeScript (`src/`). Cada sección baja solo los archivos que nece
 | Mapa 3D | La ciudad en 3D con las capas de GeoSampa. |
 | Empleo (P2) | Empleo formal por distrito y año, por sexo y por raza o color. |
 | Transporte y equipamientos (P1) | Cobertura de transporte, pasajeros, escuelas, deporte, ferias y shoppings. |
-| Gente | Población, densidad y favelas por distrito; área construida residencial. |
+| Gente | Población, densidad y favelas por distrito; área construida residencial; población desde 1872; IDH municipal por subprefeitura (2000 y 2010); nacimientos por distrito (2023-2025). |
 | Ambiente | Vegetación por subprefeitura en 2010, 2015 y 2020; temperatura mínima de 1933 a 2025. |
 | Fuentes y método | El catálogo y el diccionario, generados desde el Excel. |
 | Lo que no cubrimos | Lo que el lago no permite responder. |
@@ -107,6 +108,12 @@ Vite, React y TypeScript (`src/`). Cada sección baja solo los archivos que nece
   ciudad, así que MapLibre no pide teselas de otros lugares. También quita el relieve mundial y tapa con una
   máscara lo que queda fuera del municipio. La cámara no puede alejarse más allá de un margen alrededor de la
   ciudad.
+- **Animación de entrada.** La primera vez que se abre el Mapa 3D en una sesión del navegador, la cámara parte
+  del planeta entero (proyección de globo, con la silueta de los continentes de Natural Earth, dominio público, en
+  `public/mapa/tierra.geojson`) y baja en 5 segundos hasta la Avenida Paulista. Mientras dura se quitan los límites
+  de cámara del punto anterior y al terminar vuelven, junto con la proyección plana. Hay un botón «Saltar
+  animación», no se repite al cambiar de tema y no se reproduce si el sistema pide reducir el movimiento. Para
+  cambiar la duración o el punto de partida: `DURACION_INTRO_MS` y `CAMARA_PLANETA` en `Mapa3D.tsx`.
 - **Capas de GeoSampa.** Las capas oficiales (metro, tren, estaciones, bus, escuelas, deporte, favelas,
   distritos) se bajan la primera vez que se encienden.
 - **Red de bus y paradas por zonas.** Estas dos capas pesan unos 3 y 4 MB en total. `build_web.py` las parte en

@@ -1,8 +1,16 @@
 // Tipos del contrato de datos (sección 6 del plan) y carga de public/data/.
 
 export type Tipo = "observado" | "estimado" | "proxy" | "declarado";
-// «linea» se usa en F05 (pasajeros por línea de bus), que no tiene geografía.
-export type Nivel = "municipio" | "subprefeitura" | "distrito" | "linea";
+// «linea» se usa en F05 (pasajeros por línea de bus), que no tiene geografía. «pais», «estado» y
+// «region_metropolitana» son los territorios que F01 (población histórica) compara con el municipio.
+export type Nivel =
+  | "municipio"
+  | "subprefeitura"
+  | "distrito"
+  | "linea"
+  | "pais"
+  | "estado"
+  | "region_metropolitana";
 
 export interface Indicador {
   id: string;

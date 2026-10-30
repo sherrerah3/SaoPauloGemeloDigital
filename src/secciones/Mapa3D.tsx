@@ -14,7 +14,7 @@ import {
 } from "../componentes/maplibre";
 import { cargar } from "../datos";
 import { rutaFotoSitio, SITIOS, SITIOS_GEOJSON, type Sitio } from "../sitios";
-import { useTema } from "../tema";
+import { type Tema, useTema } from "../tema";
 
 // Colores oficiales de Metrô y CPTM: el nombre de cada línea es su color, así que se respetan.
 const LINEAS: Record<number, { nombre: string; color: string }> = {
@@ -306,6 +306,91 @@ const COLOR_BORDE_MUNICIPIO = { claro: "#52514e", oscuro: "#c3c2b7" };
 
 // Avenida Paulista; los edificios 3D aparecen desde zoom 14.
 const CAMARA_INICIAL: CameraOptions = { center: [-46.6555, -23.5613], zoom: 14.2, pitch: 60, bearing: -20 };
+const ZOOM_MINIMO = 9;
+
+// Animación de entrada: se ve el planeta y la cámara baja hasta la vista inicial. Solo la primera vez de
+// cada sesión del navegador, y no si el sistema pide reducir el movimiento. Mientras dura, el mapa es un
+// globo sin límites de cámara; al terminar vuelve al mapa de siempre.
+const DURACION_INTRO_MS = 5000;
+const CAMARA_PLANETA: CameraOptions = { center: [30, 20], zoom: 1.2, pitch: 0, bearing: 0 };
+const CAPA_TIERRA = "tierra";
+// Silueta de los continentes (Natural Earth, dominio público) sobre el color de fondo del estilo.
+const COLOR_TIERRA: Record<Tema, string> = { claro: "#bdbcb2", oscuro: "#3f3f3a" };
+const CLAVE_INTRO = "mapa3d-intro-vista";
+// Respaldo si el navegador no deja usar sessionStorage.
+let introVista = false;
+
+function debeReproducirIntro(): boolean {
+  if (introVista || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
+  try {
+    return sessionStorage.getItem(CLAVE_INTRO) === null;
+  } catch {
+    return true;
+  }
+}
+
+function marcarIntroVista() {
+  introVista = true;
+  try {
+    sessionStorage.setItem(CLAVE_INTRO, "1");
+  } catch {
+    // Sin almacenamiento solo queda el respaldo en memoria.
+  }
+}
+
+/** La silueta de los continentes; si no baja, la animación sigue sin ella. */
+function cargarTierra(): Promise<FeatureCollection | null> {
+  return fetch(`${import.meta.env.BASE_URL}mapa/tierra.geojson`)
+    .then((r) => (r.ok ? (r.json() as Promise<FeatureCollection>) : null))
+    .catch(() => null);
+}
+
+/**
+ * Baja la cámara desde el planeta hasta la vista inicial en DURACION_INTRO_MS. Devuelve la función que
+ * termina la animación (la usa el botón «Saltar»): deja el mapa en la vista inicial, con su proyección
+ * plana y sus límites de siempre.
+ */
+function volarDesdeElPlaneta(
+  m: MapaML,
+  tierra: FeatureCollection | null,
+  tema: Tema,
+  alTerminar: () => void,
+): () => void {
+  if (tierra) {
+    m.addSource(CAPA_TIERRA, { type: "geojson", data: tierra });
+    m.addLayer({
+      id: CAPA_TIERRA,
+      type: "fill",
+      source: CAPA_TIERRA,
+      // Se desvanece entre el zoom 5 y el 8, cuando ya se ve la ciudad.
+      paint: { "fill-color": COLOR_TIERRA[tema], "fill-opacity": ["interpolate", ["linear"], ["zoom"], 5, 1, 8, 0] },
+    });
+  }
+
+  let enCurso = true;
+  // Cambiar el tamaño de la ventana también dispara "moveend": solo cuenta el que cierra este vuelo.
+  const alMoverse = (e: object) => {
+    if ("intro" in e) terminar();
+  };
+
+  function terminar() {
+    if (!enCurso) return;
+    enCurso = false;
+    m.off("moveend", alMoverse);
+    // Si el vuelo se interrumpió (el usuario movió el mapa o pulsó «Saltar»), se termina en la vista inicial.
+    if (Math.abs(m.getZoom() - (CAMARA_INICIAL.zoom ?? 0)) > 0.05) m.jumpTo(CAMARA_INICIAL);
+    m.setProjection({ type: "mercator" });
+    if (m.getLayer(CAPA_TIERRA)) m.removeLayer(CAPA_TIERRA);
+    if (m.getSource(CAPA_TIERRA)) m.removeSource(CAPA_TIERRA);
+    m.setMinZoom(ZOOM_MINIMO);
+    m.setMaxBounds(LIMITES_NAVEGACION);
+    alTerminar();
+  }
+
+  m.on("moveend", alMoverse);
+  m.flyTo({ ...CAMARA_INICIAL, duration: DURACION_INTRO_MS }, { intro: true });
+  return terminar;
+}
 
 type EstadoCapa = "cargando" | "error";
 const ESTADO_VISIBLE: Record<string, string> = { cargando: "…", error: "sin datos" };
@@ -438,6 +523,9 @@ export default function Mapa3D() {
   const [mapa, setMapa] = useState<MapaML | null>(null);
   const [visibles, setVisibles] = useState<Record<string, boolean>>(INICIALES);
   const [estados, setEstados] = useState<Record<string, EstadoCapa>>({});
+  // La animación de entrada: mientras corre se muestra «Saltar», que la termina en la vista inicial.
+  const [introActiva, setIntroActiva] = useState(false);
+  const terminarIntro = useRef<(() => void) | null>(null);
   // Celdas ya bajadas por capa. Se vacía al recrear el mapa, porque las fuentes se pierden.
   const celdas = useRef(new Map<string, { cargadas: Set<string>; features: Feature[] }>());
 
@@ -448,12 +536,18 @@ export default function Mapa3D() {
 
     estiloSaoPaulo("3d", tema).then((estilo) => {
       if (cancelado) return;
+      // La animación solo corre al crear el mapa por primera vez en la sesión: un cambio de tema lo recrea
+      // en la posición donde estaba y no la repite.
+      const intro = debeReproducirIntro();
+      if (intro) marcarIntroVista();
+      const tierra = intro ? cargarTierra() : null;
       const m = new MapaML({
         container: contenedor.current!,
         style: estilo,
-        ...camara.current,
-        minZoom: 9,
-        maxBounds: LIMITES_NAVEGACION,
+        ...(intro ? CAMARA_PLANETA : camara.current),
+        // Durante la animación la cámara no tiene límites; volarDesdeElPlaneta los restituye al terminar.
+        minZoom: intro ? 0 : ZOOM_MINIMO,
+        maxBounds: intro ? undefined : LIMITES_NAVEGACION,
         attributionControl: { compact: true },
         locale: {
           "FullscreenControl.Enter": "Ver en pantalla completa",
@@ -468,16 +562,29 @@ export default function Mapa3D() {
       m.on("moveend", () => {
         camara.current = { center: m.getCenter(), zoom: m.getZoom(), pitch: m.getPitch(), bearing: m.getBearing() };
       });
+      // En style.load, antes del primer dibujo, para que no se vea un instante el planeta plano.
+      if (intro) m.once("style.load", () => m.setProjection({ type: "globe" }));
       m.on("load", async () => {
         // Las imágenes se pierden al recrear el mapa (cambio de tema): se registran en cada carga.
         if (!m.hasImage(ESTRELLA_SITIO)) m.addImage(ESTRELLA_SITIO, crearEstrella(), { pixelRatio: 2 });
         await agregarMascara(m, COLOR_BORDE_MUNICIPIO[tema]);
+        if (intro) {
+          const silueta = await tierra;
+          if (cancelado) return;
+          setIntroActiva(true);
+          terminarIntro.current = volarDesdeElPlaneta(m, silueta, tema, () => {
+            terminarIntro.current = null;
+            setIntroActiva(false);
+          });
+        }
         setMapa(m);
       });
     });
 
     return () => {
       cancelado = true;
+      terminarIntro.current = null;
+      setIntroActiva(false);
       setMapa(null);
       creado?.remove();
     };
@@ -584,6 +691,15 @@ export default function Mapa3D() {
           aria-label="Mapa 3D de São Paulo con capas de transporte"
         />
         {!mapa && <p className="mapa-cargando">Cargando São Paulo…</p>}
+        {introActiva && (
+          <button
+            type="button"
+            className="boton-secundario boton-saltar-intro"
+            onClick={() => terminarIntro.current?.()}
+          >
+            Saltar animación
+          </button>
+        )}
         <div className="panel-capas">
           <h2>Capas</h2>
           {CAPAS.map((c) => (

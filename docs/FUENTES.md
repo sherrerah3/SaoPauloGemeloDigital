@@ -4,7 +4,7 @@ Qué fuente del Diccionario (`data/Diccionario_de_datos_TallerDatos.xlsx`) entra
 dónde aparece. Los IDs son los de la hoja «1. Fuentes». El detalle de cada campo está en la hoja
 «2. Diccionario» y, ya exportado, en `data/diccionario.csv` y en la sección «Fuentes y método» del sitio.
 
-Resumen: de las 41 fuentes del catálogo, 28 están en el lago y se publican; 13 quedan por fuera (al final,
+Resumen: de las 41 fuentes del catálogo, 33 están en el lago y se publican; 8 quedan por fuera (al final,
 con el motivo).
 
 ## P1. Transporte y equipamientos
@@ -49,6 +49,9 @@ captar los datos; cada tarjeta lo advierte.
 |---|---|---|---|---|
 | F32 | Favelas (polígonos) | SEHAB/HABITASAMPA, vía GeoSampa | Favelas, domicilios en favelas (número y % de los domicilios del censo) y % del área, por distrito. Capa del mapa 3D con el nombre de cada favela, sin su calle. | `geo/favelas.geojson` (no se sube: trae la calle y la propiedad del terreno, que son Sensibles) |
 | F28 | Área construida residencial (catastro del IPTU), 1995-2025 | Prefeitura, vía Infocidade | Serie de la ciudad en la sección Gente. La fuente no la abre por distrito. | `area_construida_residencial.csv` |
+| F01 | Población histórica, 1872-2022 | IBGE (censos), vía Infocidade | Población de cada censo en Brasil, el Estado, la Región Metropolitana y el municipio (la RM desde 1980). Gráfico de la sección Gente. | `poblacion_historica.csv` |
+| F07 | IDH municipal (IDHM), 2000 y 2010 | PNUD/FJP/IPEA (Atlas 2013), vía Infocidade | IDHM e IDHM Renda por subprefeitura. La fuente trae 31 prefeituras regionales: Sapopemba (subprefeitura desde 2013) está dentro de Vila Prudente y queda sin cifra. Longevidad y educación están en la fuente, pero no son campos del Diccionario y no se guardan. | `idhm.csv` |
+| F18, F19, F20 | Nacidos vivos y tipo de parto: 2025, 2024 y 2023 | SMS (SINASC), vía Infocidade | Nacimientos por distrito y año, y por mil habitantes (población del censo 2022, F41). Solo el total: `tipo_parto` es Sensible. En 2024 y 2025 el 16 % de los nacimientos no tiene distrito (en 2023, 0,05 %). | `nacimientos_tipo_parto.csv` (no se sube: trae el tipo de parto, que es Sensible) |
 | F25, F26, F27 | Cobertura vegetal por subprefeitura: 2020, 2015 y 2010 | SVMA, vía Infocidade | Vegetación por habitante y superficie verde por subprefeitura, un año a la vez. | `cobertura_vegetal.csv` |
 | F06 | Temperatura mínima media mensual del aire, 1933-2025 | IAG/USP (estación Água Funda), vía Infocidade | Promedio anual, diferencia con la normal 1991-2020 y comparación mes a mes, en la sección Ambiente. | `temperatura_minima.csv` |
 
@@ -71,15 +74,12 @@ Diccionario.
 
 | ID | Qué es | Por qué no está |
 |---|---|---|
-| F01 | Población histórica 1872-2022 | Pendiente; la población actual ya sale del censo 2022 (F41). |
 | F02 | Visitas al artículo «São Paulo» en Wikipedia | No responde ninguna de las dos preguntas. |
 | F03 | Establecimientos de salud | Pendiente para la sección «Municipio». |
 | F04 | Ingresos y gastos municipales | Pendiente para la sección «Municipio». |
-| F07 | IDH municipal, 2000 y 2010 | Desactualizado. |
 | F08 | Estimación de población del IBGE | La API (`servicodados.ibge.gov.br`) no respondía al integrarla, en octubre de 2026. |
 | F09 | Olho Vivo (buses en tiempo real) | Necesita llave y un servidor; el sitio es estático. |
 | F10 | Tráfico del portal de datos abiertos | Descartada en el catálogo. |
-| F18-F20 | Nacimientos y tipo de parto | Pendiente; `tipo_parto` es Sensible. |
 | F37 | Curvas de nivel | Muy pesada para un sitio estático. |
 | F38 | Museos | Descartada por el equipo en el catálogo. |
 

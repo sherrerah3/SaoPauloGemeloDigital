@@ -54,6 +54,13 @@ ADVERTENCIAS = {
     "F25": "El método de medición cambia entre años; no comparar 2010, 2015 y 2020.",
     "F26": "El método de medición cambia entre años; no comparar 2010, 2015 y 2020.",
     "F27": "El método de medición cambia entre años; no comparar 2010, 2015 y 2020.",
+    "F01": "De 1872 a 1950 son personas presentes, de 1960 a 1980 personas recenseadas y desde 1991 residentes: "
+    "la serie no mide siempre lo mismo.",
+    "F07": "Es el IDHM de 2000 y 2010 (Atlas del Desarrollo Humano, 2013): no refleja la situación de hoy.",
+    "F18": "La tabla no dice si el distrito es el de residencia de la madre o el del lugar del parto.",
+    "F19": "La tabla no dice si el distrito es el de residencia de la madre o el del lugar del parto. "
+    "Cifra preliminar de la fuente (datos del 16/04/2025).",
+    "F20": "La tabla no dice si el distrito es el de residencia de la madre o el del lugar del parto.",
 }
 
 
@@ -926,9 +933,175 @@ def construir_gente():
     ]
     publicar("indicadores/gente/area_construida.json", {**cabecera, "indicadores": serie})
 
+    construir_poblacion_historica(cabecera)
+    construir_idhm(cabecera)
+    construir_nacimientos(cabecera)
+
     # Con el nombre (excepción del equipo en config.PUBLICACION_AUTORIZADA), pero sin la calle ni la
     # propiedad del terreno, que son Sensibles: publicar_geo los quita.
     publicar_geo("gente/favelas.geojson", calculos_p1.capa("favelas"), "F32", tolerancia_m=3)
+
+
+# (campo del lago, nivel, código, nombre). Las cuatro columnas de F01 son cuatro territorios distintos.
+TERRITORIOS_F01 = [
+    ("poblacion_brasil", "pais", "BR", "Brasil"),
+    ("poblacion_estado_sp", "estado", "SP", "Estado de São Paulo"),
+    ("poblacion_rm_sp", "region_metropolitana", "RMSP", "Região Metropolitana de São Paulo"),
+    ("poblacion_municipio_sp", "municipio", "MSP", "Município de São Paulo"),
+]
+ADVERTENCIA_RM = "La Región Metropolitana se creó en 1973: la fuente trae su cifra desde 1980."
+
+
+def construir_poblacion_historica(cabecera: dict):
+    """F01: población de cada censo desde 1872. Las cifras que la fuente no tiene (RM antes de 1980) no se publican."""
+    df = pd.read_csv(LAGO / "poblacion_historica.csv")
+    registros = []
+    for fila in df.itertuples():
+        for campo, nivel, codigo, nombre in TERRITORIOS_F01:
+            valor = getattr(fila, campo)
+            if pd.isna(valor):
+                continue
+            registros.append(
+                indicador(
+                    clave="poblacion_historica",
+                    campo_lago=campo,
+                    valor=valor,
+                    unidad="Personas",
+                    nivel=nivel,
+                    codigo=codigo,
+                    nombre=nombre,
+                    fuente_id="F01",
+                    vigencia=fila.anio,
+                    advertencia=ADVERTENCIA_RM if nivel == "region_metropolitana" else None,
+                )
+            )
+    publicar("indicadores/gente/poblacion_historica.json", {**cabecera, "indicadores": registros})
+
+
+# La Subprefeitura de Sapopemba se creó en 2013, después del Atlas: en F07 «Vila Prudente» la incluye.
+CODIGO_VILA_PRUDENTE = "29"
+ADVERTENCIA_VILA_PRUDENTE = (
+    "En esta fuente la Prefeitura Regional de Vila Prudente incluye el distrito de Sapopemba, "
+    "que desde 2013 es una subprefeitura aparte y no tiene cifra propia."
+)
+
+
+def construir_idhm(cabecera: dict):
+    """F07: IDHM y IDHM Renda de 2000 y 2010 por Prefeitura Regional, que equivale a la subprefeitura."""
+    df = pd.read_csv(LAGO / "idhm.csv")
+    df["nivel"] = df["prefeitura_regional"].map(lambda n: "municipio" if n == "MSP" else "subprefeitura")
+    df = unir_subprefeituras(df, "prefeitura_regional")
+    _, nombres_sub = nombres_visibles()
+    registros = []
+    for fila in df.itertuples():
+        if fila.nivel == "municipio":
+            codigo, nombre = "MSP", "Município de São Paulo"
+        else:
+            codigo = fila.codigo_subprefeitura
+            nombre = nombres_sub[codigo]
+        advertencia = ADVERTENCIA_VILA_PRUDENTE if codigo == CODIGO_VILA_PRUDENTE else None
+        for campo in ("idhm", "idhm_renda"):
+            registros.append(
+                indicador(
+                    campo_lago=campo,
+                    valor=getattr(fila, campo),
+                    unidad="Índice 0–1",
+                    nivel=fila.nivel,
+                    codigo=codigo,
+                    nombre=nombre,
+                    fuente_id="F07",
+                    vigencia=fila.anio,
+                    advertencia=advertencia,
+                )
+            )
+    publicar("indicadores/gente/idhm.json", {**cabecera, "indicadores": registros})
+
+
+FUENTE_NACIMIENTOS = {2025: "F18", 2024: "F19", 2023: "F20"}
+# Desde este porcentaje de nacimientos sin distrito, las cifras por distrito llevan la advertencia.
+UMBRAL_SIN_UBICACION_PCT = 1
+ADVERTENCIA_POBLACION_TASA = "La población es la del censo 2022, no la del año de los nacimientos."
+
+
+def poblacion_censo_por_distrito() -> pd.Series:
+    """Población del censo 2022 (F41) por código de distrito."""
+    sectores = gpd.read_file(
+        LAGO_GEO / "densidad_sectores.geojson", columns=["codigo_distrito", "poblacion"], ignore_geometry=True
+    )
+    return sectores.groupby("codigo_distrito")["poblacion"].sum()
+
+
+def construir_nacimientos(cabecera: dict):
+    """F18-F20: nacidos vivos por distrito y año, y por mil habitantes.
+
+    tipo_parto es Sensible: el total es la suma de los tres tipos y el tipo no sale del lago.
+    """
+    df = pd.read_csv(LAGO / "nacimientos_tipo_parto.csv")
+    total = df.groupby(["anio", "nivel", "unidad_territorial"], as_index=False)["nacidos_vivos"].sum()
+    total = unir_distritos(total)
+    nombres_dist, _ = nombres_visibles()
+    poblacion = poblacion_censo_por_distrito()
+    registros = []
+    for anio, grupo in total.groupby("anio"):
+        fuente = FUENTE_NACIMIENTOS[anio]
+        en_municipio = int(grupo.loc[grupo["nivel"] == "municipio", "nacidos_vivos"].iloc[0])
+        sin_distrito = int(grupo.loc[grupo["nivel"] == "sin_ubicacion", "nacidos_vivos"].iloc[0])
+        pct_sin = 100 * sin_distrito / en_municipio
+        aviso = None
+        if pct_sin >= UMBRAL_SIN_UBICACION_PCT:
+            porcentaje = f"{pct_sin:.1f}".replace(".", ",")
+            aviso = (
+                f"El {porcentaje} % de los nacimientos del año no tiene distrito conocido y no entra en las cifras "
+                "por distrito, que por eso quedan por debajo de lo real."
+            )
+        territorios = [("municipio", "MSP", "Município de São Paulo", en_municipio, int(poblacion.sum()), None)]
+        for fila in grupo[grupo["nivel"] == "distrito"].itertuples():
+            codigo = fila.codigo_distrito
+            territorios.append(
+                ("distrito", codigo, nombres_dist[codigo], int(fila.nacidos_vivos), int(poblacion[codigo]), aviso)
+            )
+        comunes = {"fuente_id": fuente, "vigencia": anio}
+        for nivel, codigo, nombre, nacidos, habitantes, advertencia in territorios:
+            territorio = {"nivel": nivel, "codigo": codigo, "nombre": nombre}
+            registros.append(
+                indicador(
+                    campo_lago="nacidos_vivos",
+                    valor=nacidos,
+                    unidad="Nacimientos",
+                    calculo="suma de los nacidos vivos de los tres tipos de parto (vaginal, cesárea e ignorado)",
+                    advertencia=advertencia,
+                    **territorio,
+                    **comunes,
+                )
+            )
+            registros.append(
+                indicador(
+                    clave="nacidos_vivos_por_mil_hab",
+                    campo_lago="nacidos_vivos",
+                    valor=1000 * nacidos / habitantes,
+                    unidad="Nacimientos por mil hab.",
+                    tipo="estimado",
+                    calculo="nacidos vivos del año / población del censo 2022 (F41) × 1.000",
+                    fuentes_adicionales=["F41"],
+                    advertencia=" ".join(a for a in (ADVERTENCIA_POBLACION_TASA, advertencia) if a),
+                    **territorio,
+                    **comunes,
+                )
+            )
+        registros.append(
+            indicador(
+                clave="nacidos_vivos_sin_ubicacion_pct",
+                campo_lago="nacidos_vivos",
+                valor=pct_sin,
+                unidad="% de los nacimientos",
+                nivel="municipio",
+                codigo="MSP",
+                nombre="Município de São Paulo",
+                calculo="nacidos vivos de la fila sin distrito / nacidos vivos del municipio × 100",
+                **comunes,
+            )
+        )
+    publicar("indicadores/gente/nacimientos.json", {**cabecera, "indicadores": registros})
 
 
 FUENTE_VEGETACION = {2020: "F25", 2015: "F26", 2010: "F27"}

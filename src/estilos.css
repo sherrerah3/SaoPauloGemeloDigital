@@ -811,6 +811,15 @@ input {
 .mapa-3d {
   height: min(70vh, 640px);
 }
+/* Botón de la animación de entrada: abajo y al centro, para no tapar los controles ni el panel de capas. */
+.boton-saltar-intro {
+  position: absolute;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  box-shadow: var(--sombra-flotante);
+}
 /* Pantalla completa: el mapa ocupa todo el alto. `maplibregl-pseudo-fullscreen` es el respaldo de
    MapLibre en navegadores sin la API (iPhone). */
 .mapa-3d-contenedor:fullscreen,

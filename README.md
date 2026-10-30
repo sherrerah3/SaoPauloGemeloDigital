@@ -20,7 +20,7 @@ ingesta/              scripts de Python (se corren en local o en Docker)
   exportar_excel.py   Excel → data/fuentes.csv y data/diccionario.csv
   pull_territorio.py  distritos y subprefeituras desde el WFS de GeoSampa
   pull_empleo.py      F11-F17 (empleo, por sexo y por raza o color)
-  pull_poblacion.py   F41 y F28 (pendiente: F01, F08)
+  pull_poblacion.py   F41, F28, F01, F07 y F18-F20 (pendiente: F08)
   pull_movilidad.py   F29, F30, F31, F35, F36 (GeoSampa) y F05 (pasajeros SPTrans)
   pull_equipamientos.py  F21-F24 (ferias, shoppings), F33, F34, F39, F40 (GeoSampa) y F32 (favelas)
   pull_ambiente.py    F25-F27 (cobertura vegetal) y F06 (temperatura mínima)
@@ -32,8 +32,9 @@ ingesta/              scripts de Python (se corren en local o en Docker)
 data/
   Diccionario_de_datos_TallerDatos.xlsx   catálogo (fuente de verdad)
   raw/                crudos con fecha en el nombre (no van en git: están en un release, ver abajo)
-  lago/               CSV y GeoJSON limpios (GeoJSON en EPSG:31983); densidad_sectores, favelas y
-                      empleo_raza no se suben (traen campos Sensibles), ni buses (>50 MB): se regeneran
+  lago/               CSV y GeoJSON limpios (GeoJSON en EPSG:31983); densidad_sectores, favelas,
+                      empleo_raza y nacimientos_tipo_parto no se suben (traen campos Sensibles), ni
+                      buses (>50 MB): se regeneran
                       con `npm run datos`
   derivados/          tablas calculadas, para revisar (no son campos del lago)
 public/data/          salida para la web (sí se sube: es lo que sirve Vercel)

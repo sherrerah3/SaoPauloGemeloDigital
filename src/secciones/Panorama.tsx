@@ -78,8 +78,8 @@ export default function Panorama() {
         <TarjetaIndicador titulo="Población (censo 2022)" indicador={busca("poblacion")} />
       </div>
       <p className="nota">
-        Pendientes para esta portada: población histórica (F01, F08) y finanzas municipales (F04). Secciones con datos:{" "}
-        {listas} de {SECCIONES.length}.
+        Pendientes para esta portada: estimación de población del IBGE (F08) y finanzas municipales (F04). Secciones
+        con datos: {listas} de {SECCIONES.length}.
       </p>
     </section>
   );

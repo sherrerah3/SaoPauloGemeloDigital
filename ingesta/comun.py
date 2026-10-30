@@ -181,6 +181,10 @@ ALIAS_SUBPREFEITURA = {
     "perus": "perus anhanguera",
     "pirituba": "pirituba jaragua",
     "sao miguel paulista": "sao miguel",
+    # Nombres de las «Prefeituras Regionais» del IDHM (F07).
+    "aricanduva vila formosa": "aricanduva formosa carrao",
+    "casa verde": "casa verde limao cachoeirinha",
+    "freguesia do o brasilandia": "freguesia brasilandia",
 }
 
 
