@@ -1,7 +1,7 @@
 # São Paulo · sistema de información
 
 Grupo: Samuel Herrera Hoyos, Samuel Henao Castrillón, Juan José Gómez Ramírez y Juan Carlos Fernández Vanoy
-· Despliegue: sitio estático, publicable en Vercel con `npm run build` · Revisado: 2026-11-03
+· Sitio: <https://sao-paulo-gemelo-digital.vercel.app/#panorama> · Revisado: 2026-11-03
 
 Un gemelo digital de São Paulo hecho solo con datos abiertos oficiales. Todo se procesa antes, en Python; el
 sitio es estático y cada cifra dice de dónde sale, de cuándo es y cuándo se probó la fuente.
