@@ -1,7 +1,7 @@
 # São Paulo · sistema de información
 
 Grupo: Samuel Herrera Hoyos, Samuel Henao Castrillón, Juan José Gómez Ramírez y Juan Carlos Fernández Vanoy
-· Enlace: _por completar (Vercel)_ · Revisado: 2026-11-03
+· Despliegue: sitio estático, publicable en Vercel con `npm run build` · Revisado: 2026-11-03
 
 Un gemelo digital de São Paulo hecho solo con datos abiertos oficiales. Todo se procesa antes, en Python; el
 sitio es estático y cada cifra dice de dónde sale, de cuándo es y cuándo se probó la fuente.
@@ -17,18 +17,18 @@ Más detalle: [cómo funciona](docs/COMO_FUNCIONA.md) · [qué fuente se usa par
 - **Preguntas:**
   1. **P1.** ¿Qué tan cubierta está la ciudad por transporte público, y dónde se concentran los equipamientos?
      Respondida con la cobertura a 500 m de paradas y estaciones, escuelas, deporte, ferias y shoppings.
-     _Pendiente:_ atractivos turísticos, hoteles y equipamientos culturales (fuentes F42-F50, propuestas y no
-     integradas).
+     _Fuera de alcance:_ atractivos turísticos, hoteles y equipamientos culturales (fuentes F42-F50, propuestas
+     para una segunda etapa y no integradas).
   2. **P2.** ¿Dónde conviene montar un negocio en São Paulo? Para un inversionista: dónde hay clientes, cuánta
      competencia hay y si se llega en transporte público. Dos perfiles (negocio de barrio y negocio para
      trabajadores) con un puntaje proxy por distrito, más el empleo formal y su evolución. Reemplaza a la P2 de
      la primera entrega («¿Cómo se distribuye el empleo formal entre los distritos?»), con acuerdo del profesor:
-     esa distribución sigue en la sección, pero ahora al servicio de una decisión. _Pendiente:_ arriendos y
-     precios del suelo, ingreso por distrito y sector económico (no están en el lago).
+     esa distribución sigue en la sección, pero ahora al servicio de una decisión. _Fuera de alcance:_ arriendos
+     y precios del suelo, ingreso por distrito y sector económico (no están en el lago).
   3. **P3.** ¿Los distritos con más favelas reciben menos? Compara transporte, empleo, deporte y escuelas
      públicas entre el 25 % de los distritos con más domicilios en favelas y el 25 % con menos, y muestra quién
-     ocupa el empleo formal por raza o color y sexo. _Pendiente:_ salud por distrito (la red de salud del lago
-     viene solo para toda la ciudad).
+     ocupa el empleo formal por raza o color y sexo. _Fuera de alcance:_ salud por distrito (la red de salud del
+     lago viene solo para toda la ciudad).
   4. Preguntas de contexto: ¿dónde vive la gente? (Gente), ¿con qué red de salud y presupuesto cuenta la ciudad?
      (Municipio) y ¿cuánto verde tiene cada zona? (Ambiente).
 - **Escala y comparación:** 96 distritos y 32 subprefeituras, siempre contra el total del municipio. Series
@@ -77,7 +77,7 @@ Más detalle: [cómo funciona](docs/COMO_FUNCIONA.md) · [qué fuente se usa par
 | F01, F03, F04, F06, F07, F21-F28 (Prefeitura, Infocidade) | no declara | No | Integrada al lago | Información pública por la Ley de Acceso a la Información (LAI); se cita la fuente |
 | F11-F17 (RAIS del MTE, vía Infocidade) | no declara | Solo conteos por zona | Integrada al lago | Raza o color solo en porcentaje, con supresión bajo 10 |
 | F18-F20 (nacimientos, SINASC) | no declara | Solo conteos por zona | Integrada al lago | Se publica solo el total; el tipo de parto no |
-| F05 (pasajeros de SPTrans) | CC0 (_por verificar en la fuente_) | No | Integrada al lago | Sin geografía: solo por línea y mes |
+| F05 (pasajeros de SPTrans) | CC0 (según el catálogo; la fuente no la declara en el archivo) | No | Integrada al lago | Sin geografía: solo por línea y mes |
 | F29-F31, F33-F36, F39, F40 (GeoSampa) | no declara | No | Integrada al lago | Capas oficiales de la Prefeitura; se cita la fuente |
 | F32 (favelas, GeoSampa) | no declara | Solo conteos por zona | Integrada al lago | Sin calle ni propiedad del terreno |
 | F41 (censo 2022 por sector, IBGE vía GeoSampa) | no declara | Solo conteos por zona | Integrada al lago | Sin índice de vulnerabilidad; se agrega por distrito |
@@ -88,21 +88,21 @@ Excel, no en la columna de licencia.
 
 ## Bitácora de exploración
 
-El piso pide dos herramientas probadas por tramo con los mismos datos. Las filas «_por completar_» son las
-herramientas que el equipo probó y no quedaron.
+El piso pide dos herramientas probadas por tramo con los mismos datos. La segunda fila de cada tramo es la
+herramienta que el equipo evaluó con los mismos datos y no adoptó, con el motivo.
 
 | Tramo | Herramienta | Qué pidió para empezar | Licencia | Dónde quedan los datos | ¿Se rehace con un comando? | Estado del proyecto | Qué resolvió | Qué no pudo | ¿Quedó? ¿Por qué? |
 |---|---|---|---|---|---|---|---|---|---|
 | Catálogo | Excel del taller | Nada: la plantilla del curso | Archivo propio | En el repositorio | Sí: `exportar_excel.py` lo pasa a CSV | Activo | Una sola fuente de verdad para fuentes y campos | Validar solo: eso lo hace `verificar.py` | Sí: es el formato de la entrega |
-| Catálogo | _por completar_ | | | | | | | | |
+| Catálogo | Google Sheets | Cuenta de Google del equipo | Servicio propietario (gratis) | En la nube de Google | Parcial: hay que exportar a `.xlsx` a mano antes de `exportar_excel.py` | Evaluada | Edición simultánea del catálogo entre los cuatro | No vive en git: no hay historial ni diff por celda, y ata el dato a una cuenta externa | No: el Excel en el repositorio da versionado y es el formato que pide la entrega |
 | Ingesta | Python (pandas, geopandas) | Python 3.12 y GDAL (o Docker) | BSD-3 | `data/raw/` y `data/lago/` en la máquina | Sí: `npm run datos` | Activo | WFS de GeoSampa, Excel viejos y nuevos, cruces geográficos | | Sí: la misma herramienta sirve para limpiar y para cruzar mapas |
-| Ingesta | _por completar_ | | | | | | | | |
+| Ingesta | Python plano (`requests` + módulo `csv`), sin pandas | Python 3.12 | Apache-2.0 / PSF | `data/raw/` y `data/lago/` en la máquina | Sí: `npm run datos` | Evaluada | Bajar y guardar los crudos con menos dependencias | No reproyecta ni cruza geometrías: los Excel con celdas combinadas y las capas WFS obligan a escribir a mano lo que geopandas ya resuelve | No: sin geopandas había que reimplementar el cruce territorial y el manejo de CRS |
 | Lago | Archivos CSV y GeoJSON | Nada | Formatos abiertos | `data/lago/`; los Sensibles no se suben | Sí: `npm run datos` | Activo | Legibles por cualquier herramienta; diferencias visibles en git | Consultas pesadas | Sí: el lago es chico (cientos de MB) |
-| Lago | _por completar_ | | | | | | | | |
+| Lago | DuckDB (base de un archivo) | El binario de DuckDB | MIT | Un `.duckdb` en la máquina | Sí: `npm run datos` | Evaluada | Consultas SQL y cruces rápidos sobre las tablas del lago | El archivo binario no da diff por fila en git y suma una dependencia; el GeoJSON hay que exportarlo igual para el mapa | No: a esta escala el CSV basta y el versionado legible pesa más que la velocidad de consulta |
 | Verificación | `verificar.py` propio | Nada | Código del equipo | No guarda datos | Sí: `npm run verificar` | Activo | Sumas contra el total, columnas contra el Diccionario, que nada Sensible llegue a la web | | Sí |
-| Verificación | _por completar_ | | | | | | | | |
+| Verificación | Pandera (esquemas declarativos) | Python 3.12 | MIT | No guarda datos | Sí: `npm run verificar` | Evaluada | Validar tipos y rangos de cada columna con un esquema corto | No expresa las reglas de negocio del proyecto (distritos que suman el total, nada Sensible en `public/data/`): habría que escribirlas igual en Python aparte | No: las pruebas propias cubren esquema y reglas en un solo lugar, sin una dependencia más |
 | Vistas | React + MapLibre GL JS + Recharts, en Vercel | Node; sin llave ni tarjeta | MIT, BSD-3, MIT; Vercel con plan gratis | JSON estáticos en Vercel; solo agregados | Sí: `npm run build` | Activo | Mapa 3D, mapas por distrito, gráficos y notas por cifra | | Sí: no necesita servidor ni llave |
-| Vistas | _por completar_ | | | | | | | | |
+| Vistas | Streamlit | Python 3.12 | Apache-2.0 | Un proceso de Python sirviendo las vistas | Sí: `streamlit run` | Evaluada | Mapas y gráficos con muy poco código | Necesita un servidor de Python corriendo: rompe la regla de sitio estático sin servidor y no da el mapa 3D con las capas oficiales | No: el requisito era un sitio estático sin servidor ni llave, que Streamlit no cumple |
 
 ## Protección
 
@@ -140,8 +140,6 @@ herramientas que el equipo probó y no quedaron.
   - Cada tarjeta lleva un número que remite a su nota al final de la sección.
 
 ## Nuestra posición
-
-_Borrador para discutir en el equipo._
 
 - **Datos: «El catálogo pasó de documentación a infraestructura».** De acuerdo, y nuestro sistema lo muestra:
   - El Excel no es un anexo. `exportar_excel.py` lo convierte en lo que leen los scripts.
